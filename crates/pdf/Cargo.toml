@@ -1,19 +1,19 @@
 [package]
-name = "wordcraft-pdf"
+name = "woant-office-pdf"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "WordCraft PDF export (krilla): embedded font subsets with selectable text, links, outline, tagging"
+description = "Woant Office PDF export (krilla): embedded font subsets with selectable text, links, outline, tagging"
 
 [lints]
 workspace = true
 
 [dependencies]
-wordcraft-doc = { workspace = true }
-wordcraft-geom = { workspace = true }
-wordcraft-fonts = { workspace = true }
-wordcraft-layout = { workspace = true }
-wordcraft-metafile = { workspace = true }
+woant-office-doc = { workspace = true }
+woant-office-geom = { workspace = true }
+woant-office-fonts = { workspace = true }
+woant-office-layout = { workspace = true }
+woant-office-metafile = { workspace = true }
 krilla = { workspace = true }
 kurbo = { workspace = true }
 image = { workspace = true }

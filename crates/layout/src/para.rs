@@ -4,13 +4,13 @@
 use std::collections::VecDeque;
 use std::sync::Arc;
 
-use wordcraft_doc::math::MathJc;
-use wordcraft_doc::numbering::{Level, LevelSuffix};
-use wordcraft_doc::para::{COLUMN_BREAK, InlineObject, LINE_BREAK, NoteKind, OBJ, PAGE_BREAK, RubyAlign, SOFT_HYPHEN, WrapText};
-use wordcraft_doc::props::{Align, CharProps, LineSpacing, ParaProps, TabAlign, TabLeader, TabStop};
-use wordcraft_doc::resolve::{ResolvedChar, ResolvedPara};
-use wordcraft_doc::{Document, Paragraph};
-use wordcraft_fonts::FaceRef;
+use woant_office_doc::math::MathJc;
+use woant_office_doc::numbering::{Level, LevelSuffix};
+use woant_office_doc::para::{COLUMN_BREAK, InlineObject, LINE_BREAK, NoteKind, OBJ, PAGE_BREAK, RubyAlign, SOFT_HYPHEN, WrapText};
+use woant_office_doc::props::{Align, CharProps, LineSpacing, ParaProps, TabAlign, TabLeader, TabStop};
+use woant_office_doc::resolve::{ResolvedChar, ResolvedPara};
+use woant_office_doc::{Document, Paragraph};
+use woant_office_fonts::FaceRef;
 
 use crate::fields::{FIELD_SHADING, FieldCtx, field_code_text, field_text};
 
@@ -268,7 +268,7 @@ pub struct ParaLayout {
     /// Ruby (Phonetic Guide) text over base-text clusters, in cluster order.
     pub rubies: Vec<RubyLayout>,
     /// Display equations (on lines of their own): cluster index and justification.
-    pub displays: Vec<(usize, wordcraft_doc::math::MathJc)>,
+    pub displays: Vec<(usize, woant_office_doc::math::MathJc)>,
     /// Byte ranges of the text laid out as nothing ([`left_out`]): hidden text that is not shown,
     /// tracked deletions in the final text. Resolved as laid out, table formatting included.
     pub left_out: Vec<std::ops::Range<usize>>,
@@ -284,7 +284,7 @@ pub struct ParaLayout {
 /// relative to the cluster's left edge and baseline, in the cluster's text colour.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Enclosed {
-    pub kind: wordcraft_doc::para::ShapeKind,
+    pub kind: woant_office_doc::para::ShapeKind,
     /// Left edge from the cluster's x; top above the baseline (up is positive), points.
     pub x: f32,
     pub top: f32,
@@ -341,12 +341,12 @@ pub struct Grid {
 
 impl Grid {
     /// The grid of section `s` of `doc` (its default font size from the Normal style).
-    pub fn of(doc: &Document, s: &wordcraft_doc::SectionProps) -> Grid {
+    pub fn of(doc: &Document, s: &woant_office_doc::SectionProps) -> Grid {
         let Some(line) = s.grid_line_pitch() else { return Grid::default() };
         let size = doc.styles.resolve_char(Some("Normal"), &CharProps::default()).size;
         let font_size = if size.is_finite() { size.clamp(1.0, 1584.0) } else { 10.5 };
         let chars = s.grid_char_pitch(font_size);
-        let snap_all = s.doc_grid.is_some_and(|g| g.kind == wordcraft_doc::section::DocGridType::SnapToChars);
+        let snap_all = s.doc_grid.is_some_and(|g| g.kind == woant_office_doc::section::DocGridType::SnapToChars);
         Grid { line: Some(line), chars, font_size, snap_all }
     }
     /// A cache key for paragraph layouts.
@@ -453,7 +453,7 @@ fn is_mark(c: char) -> bool {
 /// Bidi embedding levels per byte of `text` (UAX #9 rules up to I2), or empty when the
 /// paragraph is left to right and has no right-to-left characters.
 pub fn bidi_levels(text: &str, rtl_para: bool) -> Vec<u8> {
-    if !rtl_para && !text.chars().any(wordcraft_fonts::is_rtl) {
+    if !rtl_para && !text.chars().any(woant_office_fonts::is_rtl) {
         return Vec::new();
     }
     let level = if rtl_para { unicode_bidi::Level::rtl() } else { unicode_bidi::Level::ltr() };
@@ -502,7 +502,7 @@ fn east_asian(c: char) -> bool {
 impl<'a> Builder<'a> {
     /// Style index for a resolved char in `face` (caps-scaled `size` override for small caps).
     fn style(&mut self, rc: &Arc<ResolvedChar>, face_override: Option<FaceRef>, small: bool) -> u16 {
-        let r = wordcraft_fonts::word::resolve(&rc.font, rc.bold, rc.italic);
+        let r = woant_office_fonts::word::resolve(&rc.font, rc.bold, rc.italic);
         let face = face_override.unwrap_or(r.face);
         // The display list reads every run's format (link target, strike kind, underline colour,
         // baseline shift…) from its StyleRun, so runs share one only when their formats are equal.
@@ -528,7 +528,7 @@ impl<'a> Builder<'a> {
             }
         }
         let size = rc.draw_size() * if small { 0.8 } else { 1.0 };
-        let (a, d) = wordcraft_fonts::word::line_metrics(&face);
+        let (a, d) = woant_office_fonts::word::line_metrics(&face);
         let k = size as f64 / face.upem.max(1.0);
         // A fallback face (letters the requested font lacks) is emboldened or slanted when it has
         // no bold or italic of its own.
@@ -566,15 +566,15 @@ impl<'a> Builder<'a> {
         // Complex-script characters (Persian, Arabic…) use the run's complex-script font, size,
         // bold and italic.
         let rc_cs: Option<Arc<ResolvedChar>> = text.chars().any(|c| rc.uses_complex(c)).then(|| Arc::new(rc.complex()));
-        let primary = wordcraft_fonts::word::resolve(&rc.font, rc.bold, rc.italic).face;
-        let primary_cs = rc_cs.as_ref().map(|r| wordcraft_fonts::word::resolve(&r.font, r.bold, r.italic).face);
+        let primary = woant_office_fonts::word::resolve(&rc.font, rc.bold, rc.italic).face;
+        let primary_cs = rc_cs.as_ref().map(|r| woant_office_fonts::word::resolve(&r.font, r.bold, r.italic).face);
         // Chinese, Japanese and Korean characters use the run's East Asian font (`w:eastAsia`) when
         // it is installed and has them.
         let primary_ea = rc
             .font_ea
             .as_ref()
             .filter(|f| !f.eq_ignore_ascii_case(&rc.font) && text.chars().any(east_asian))
-            .map(|f| wordcraft_fonts::word::resolve(f, rc.bold, rc.italic))
+            .map(|f| woant_office_fonts::word::resolve(f, rc.bold, rc.italic))
             .filter(|r| !r.substituted)
             .map(|r| r.face);
         let use_levels = para_text && !self.levels.is_empty();
@@ -597,7 +597,7 @@ impl<'a> Builder<'a> {
                 Some(SegKey { face: Some(f), .. }) if f.covers(c) => Some(f),
                 _ => {
                     let (bold, italic) = if complex { (rc.bold_cs, rc.italic_cs) } else { (rc.bold, rc.italic) };
-                    wordcraft_fonts::FontDb::global().fallback_styled(c, prim.id(), bold, italic).map(|f| FaceRef::of(&f))
+                    woant_office_fonts::FontDb::global().fallback_styled(c, prim.id(), bold, italic).map(|f| FaceRef::of(&f))
                 }
             };
             let small = rc.small_caps && !rc.caps && c.is_lowercase();
@@ -629,9 +629,9 @@ impl<'a> Builder<'a> {
             let upper = rc.caps || small;
             let map = |c: char| if upper { c.to_uppercase().next().unwrap_or(c) } else { c };
             let shaped = if use_levels {
-                wordcraft_fonts::shape_run(&st.face, sub, &[], map, key.rtl)
+                woant_office_fonts::shape_run(&st.face, sub, &[], map, key.rtl)
             } else {
-                wordcraft_fonts::shape(&st.face, sub, &[], map)
+                woant_office_fonts::shape(&st.face, sub, &[], map)
             };
             let k = st.size / st.face.upem.max(1.0) as f32;
             let hscale = rc.scale / 100.0;
@@ -735,11 +735,11 @@ impl<'a> Builder<'a> {
         start: usize,
         end: usize,
         rc: &Arc<ResolvedChar>,
-        align: wordcraft_doc::eq::OAlign,
+        align: woant_office_doc::eq::OAlign,
         width: f32,
         dy: f32,
     ) -> Option<usize> {
-        use wordcraft_doc::eq::OAlign;
+        use woant_office_doc::eq::OAlign;
         let (c0, s0) = (self.clusters.len(), self.shown.len());
         for t in texts {
             self.shape_atomic(t, start, end, rc);
@@ -783,20 +783,20 @@ impl<'a> Builder<'a> {
 
 /// Lay out an `EQ \o` field (ECMA-376 Part 1 §17.16.5.20): its arguments drawn on top of one
 /// another, as one cluster. An enclosure symbol among them (○ □ △ ◇, see
-/// [`wordcraft_doc::eq::EncloseShape`]) is drawn as a shape around the text rather than as a
+/// [`woant_office_doc::eq::EncloseShape`]) is drawn as a shape around the text rather than as a
 /// glyph, so it never depends on the font: "shrink text" scales the text to fit inside a shape
 /// one em high, "enlarge symbol" grows the shape around text at its own size.
 fn overstrike(
     b: &mut Builder,
-    o: &wordcraft_doc::eq::Overstrike,
+    o: &woant_office_doc::eq::Overstrike,
     instr: &str,
     start: usize,
     end: usize,
     rc: &Arc<ResolvedChar>,
     enclosures: &mut Vec<(usize, Enclosed)>,
 ) {
-    use wordcraft_doc::eq::{EncloseShape, EncloseStyle, Enclosure};
-    use wordcraft_doc::para::ShapeKind;
+    use woant_office_doc::eq::{EncloseShape, EncloseStyle, Enclosure};
+    use woant_office_doc::para::ShapeKind;
     let shapes: Vec<EncloseShape> = o.args.iter().filter_map(|a| EncloseShape::from_symbol(a)).collect();
     let texts: Vec<&str> = o.args.iter().filter(|a| !a.is_empty() && EncloseShape::from_symbol(a).is_none()).map(String::as_str).collect();
     let Some(shape) = shapes.first().copied() else {
@@ -1064,7 +1064,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
                     match p.objects.get(k) {
                         Some(o) if o.is_drawing() => {
                             if let Some((w, h, float)) = o.frame()
-                                && float.wrap == wordcraft_doc::para::Wrap::Inline
+                                && float.wrap == woant_office_doc::para::Wrap::Inline
                             {
                                 let maxw = (env.width - rp.indent_left.max(0.0) - rp.indent_right.max(0.0)).max(18.0);
                                 let (w, h) = (w.clamp(1.0, 4000.0), h.clamp(1.0, 4000.0));
@@ -1087,7 +1087,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
                                 }
                                 b.shape_atomic(&field_code_text(instr), start, end, &Arc::new(shaded));
                             } else {
-                                match wordcraft_doc::eq::parse_overstrike(instr) {
+                                match woant_office_doc::eq::parse_overstrike(instr) {
                                     Some(o) => overstrike(&mut b, &o, instr, start, end, &rc, &mut enclosures),
                                     None => {
                                         let (t, page_dep) = field_text(instr, result, env.fields);
@@ -1108,7 +1108,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
                                 custom.clone()
                             };
                             let mut sup = (*rc).clone();
-                            sup.vert_align = wordcraft_doc::props::VertAlign::Superscript;
+                            sup.vert_align = woant_office_doc::props::VertAlign::Superscript;
                             b.shape_atomic(&num, start, end, &Arc::new(sup));
                             notes.push((b.clusters.len().saturating_sub(1), *id));
                         }
@@ -1146,7 +1146,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
                             let mut rr = (*resolve(&props.clone().overlaid(ruby_props))).clone();
                             let size = if size.is_finite() { size.clamp(1.0, 1584.0) } else { rc.size * 0.5 };
                             (rr.size, rr.size_cs, rr.position) = (size, size, 0.0);
-                            rr.vert_align = wordcraft_doc::props::VertAlign::Baseline;
+                            rr.vert_align = woant_office_doc::props::VertAlign::Baseline;
                             let raise = if raise.is_finite() { raise.clamp(0.0, 1584.0) } else { rc.size };
                             if let Some(r) = b.ruby(base, ruby, *align, raise, start, end, &rc, &Arc::new(rr)) {
                                 rubies.push(r);
@@ -1213,10 +1213,10 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
         // A Symbol/Wingdings bullet (U+F0B7…) without that font installed, or in a face that has
         // no glyph at the private-use code: draw the standard character instead, since a
         // substitute has another glyph, or none, there.
-        let r = wordcraft_fonts::word::resolve(&rc.font, rc.bold, rc.italic);
+        let r = woant_office_fonts::word::resolve(&rc.font, rc.bold, rc.italic);
         let text: String = text
             .chars()
-            .map(|c| match wordcraft_fonts::word::symbol_font_char(&rc.font, c) {
+            .map(|c| match woant_office_fonts::word::symbol_font_char(&rc.font, c) {
                 Some(u) if r.substituted || !r.face.covers(c) => u,
                 _ => c,
             })
@@ -1307,7 +1307,7 @@ fn break_lines(pl: &mut ParaLayout, env: &ParaEnv, mark_style: u16, level: Optio
     let first_left = rp.indent_left + rp.indent_first;
     // Word 2013+ (compatibility mode 15) fits more text on a justified line by shrinking its
     // spaces, up to MAX_SPACE_SHRINK of their width; never on lines with tabs.
-    let shrink_spaces = rp.align == Align::Justify && env.doc.settings.compat_mode >= wordcraft_doc::COMPAT_MODE_CURRENT;
+    let shrink_spaces = rp.align == Align::Justify && env.doc.settings.compat_mode >= woant_office_doc::COMPAT_MODE_CURRENT;
     let hanging_at = if rp.indent_first < 0.0 { Some(rp.indent_left) } else { None };
     // Hyphenation Options: the zone, and how many lines in a row may end with a hyphen.
     let zone = Some(env.doc.settings.hyphenation_zone).filter(|z| z.is_finite() && *z >= 0.0).unwrap_or(HYPHENATION_ZONE).min(1584.0);
@@ -1970,7 +1970,7 @@ fn row_spans(exclusions: &[Exclusion], top: f32, h: f32, lo: f32, hi: f32) -> Re
 }
 
 /// Word's default hyphenation zone (0.25"), points.
-const HYPHENATION_ZONE: f32 = wordcraft_doc::DEFAULT_HYPHENATION_ZONE;
+const HYPHENATION_ZONE: f32 = woant_office_doc::DEFAULT_HYPHENATION_ZONE;
 
 /// How much of their width the spaces of a justified line may give up to fit more text (Word
 /// 2013+, compatibility mode 15).
@@ -2014,7 +2014,7 @@ fn hyphen_glyph(pl: &ParaLayout, style: u16, cache: &mut Vec<(u16, u32, f32)>) -
         .styles
         .get(style as usize)
         .and_then(|st| {
-            let g = wordcraft_fonts::shape(&st.face, "-", &[], |c| c).into_iter().next()?;
+            let g = woant_office_fonts::shape(&st.face, "-", &[], |c| c).into_iter().next()?;
             let k = st.size / st.face.upem.max(1.0) as f32 * st.rc.scale / 100.0;
             Some((style, g.gid, g.x_advance as f32 * k))
         })
@@ -2030,7 +2030,7 @@ fn hyphen_glyph(pl: &ParaLayout, style: u16, cache: &mut Vec<(u16, u32, f32)>) -
 fn hyphenation_points(text: &str, to_para: impl Fn(usize) -> Option<usize>, pl: &ParaLayout, auto: bool, caps: bool) -> Vec<u32> {
     let mut bytes: Vec<usize> = text.char_indices().filter(|(_, c)| *c == SOFT_HYPHEN).map(|(i, c)| i + c.len_utf8()).collect();
     if auto {
-        let lim = wordcraft_proof::hyphen::Limits::default();
+        let lim = woant_office_proof::hyphen::Limits::default();
         let mut start: Option<usize> = None;
         for (i, c) in text.char_indices().chain(std::iter::once((text.len(), ' '))) {
             let word_char = c.is_alphabetic() || c == '\'' || c == '\u{2019}';
@@ -2042,11 +2042,11 @@ fn hyphenation_points(text: &str, to_para: impl Fn(usize) -> Option<usize>, pl: 
                     let all_caps = |w: &str| w.chars().filter(|c| c.is_alphabetic()).all(char::is_uppercase);
                     if let Some(w) = text.get(a..i)
                         && w.chars().count() >= lim.min_word
-                        && !w.chars().any(wordcraft_fonts::is_rtl)
+                        && !w.chars().any(woant_office_fonts::is_rtl)
                         && (caps || !all_caps(w))
                     {
                         let offs: Vec<usize> = w.char_indices().map(|(o, _)| o).collect();
-                        for pt in wordcraft_proof::hyphen::hyphen_points(w, &lim) {
+                        for pt in woant_office_proof::hyphen::hyphen_points(w, &lim) {
                             if let Some(o) = offs.get(pt) {
                                 bytes.push(a + o);
                             }
@@ -2234,17 +2234,17 @@ fn proof_issues(p: &Paragraph) -> Vec<(usize, usize, bool)> {
         p.run_ranges().any(|(r, c)| r.start < b && a < r.end && (c.no_proof == Some(true) || c.hidden == Some(true) || c.link.is_some()))
     };
     let mut v: Vec<(usize, usize, bool)> =
-        wordcraft_proof::check_spelling(&text).into_iter().filter(|i| !skip(i.start, i.end)).map(|i| (i.start, i.end, false)).collect();
-    v.extend(wordcraft_proof::check_grammar(&text).into_iter().filter(|i| !skip(i.start, i.end)).map(|i| (i.start, i.end, true)));
+        woant_office_proof::check_spelling(&text).into_iter().filter(|i| !skip(i.start, i.end)).map(|i| (i.start, i.end, false)).collect();
+    v.extend(woant_office_proof::check_grammar(&text).into_iter().filter(|i| !skip(i.start, i.end)).map(|i| (i.start, i.end, true)));
     v
 }
 
 /// Text for proofing with the same byte offsets: inline objects and tracked deletions become
 /// U+0001 bytes (neither words nor spaces).
-pub fn proof_text(p: &wordcraft_doc::Paragraph) -> String {
+pub fn proof_text(p: &woant_office_doc::Paragraph) -> String {
     let mut out = String::with_capacity(p.text.len());
     for (i, c) in p.text.char_indices() {
-        let deleted = c == wordcraft_doc::para::OBJ || p.props_of_char(i).del.is_some();
+        let deleted = c == woant_office_doc::para::OBJ || p.props_of_char(i).del.is_some();
         if deleted {
             for _ in 0..c.len_utf8() {
                 out.push('\u{1}');

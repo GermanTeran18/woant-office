@@ -1,10 +1,10 @@
 //! Paragraph formatting, lists and styles (Home › Paragraph, Home › Styles).
 
 use serde_json::{Value, json};
-use wordcraft_doc::numbering::ListKind;
-use wordcraft_doc::props::{Align, Border, BorderStyle, Borders, LineSpacing, NumRef, ParaProps, Rgb, TabAlign, TabLeader, TabStop};
-use wordcraft_doc::styles::{Style, StyleKind};
-use wordcraft_doc::{Block, Pos};
+use woant_office_doc::numbering::ListKind;
+use woant_office_doc::props::{Align, Border, BorderStyle, Borders, LineSpacing, NumRef, ParaProps, Rgb, TabAlign, TabLeader, TabStop};
+use woant_office_doc::styles::{Style, StyleKind};
+use woant_office_doc::{Block, Pos};
 
 use super::sel_result;
 use crate::{CmdError, CmdResult, CommandSpec, Session, p};
@@ -211,7 +211,7 @@ pub fn specs() -> Vec<CommandSpec> {
 }
 
 /// Resolved paragraph props at the caret.
-fn cur(s: &Session) -> wordcraft_doc::resolve::ResolvedPara {
+fn cur(s: &Session) -> woant_office_doc::resolve::ResolvedPara {
     // A selection ending at the next paragraph's start doesn't format that paragraph (#418), so
     // its state comes from the last paragraph it does cover.
     let (a, b) = s.sel.ordered();
@@ -430,9 +430,9 @@ fn list(s: &mut Session, v: &Value, default: ListKind) -> CmdResult {
         s.doc.para_paths_in(&a, &b).iter().map(|p| s.doc.para(a.story, p).and_then(|x| x.props.numbering).filter(|n| n.num != 0)).collect();
     let same_kind = |n: &NumRef| {
         s.doc.numbering.level(n.num, 0).is_some_and(|l| {
-            let want = wordcraft_doc::numbering::levels_for(kind);
+            let want = woant_office_doc::numbering::levels_for(kind);
             want.first().is_some_and(|w| {
-                (w.format == wordcraft_doc::section::NumFormat::Bullet) == (l.format == wordcraft_doc::section::NumFormat::Bullet)
+                (w.format == woant_office_doc::section::NumFormat::Bullet) == (l.format == woant_office_doc::section::NumFormat::Bullet)
                     && (p::str(v, "kind").is_none() || w.text == l.text)
             })
         })
@@ -658,7 +658,7 @@ fn heading_level(s: &Session, props: &ParaProps) -> Option<u8> {
 fn ensure_heading_style(s: &mut Session, n: u8) -> String {
     let id = format!("Heading{n}");
     if s.doc.styles.get(&id).is_none() {
-        let builtin = wordcraft_doc::styles::StyleSheet::builtin();
+        let builtin = woant_office_doc::styles::StyleSheet::builtin();
         for sid in [id.clone(), format!("{id}Char")] {
             if s.doc.styles.get(&sid).is_none()
                 && let Some(st) = builtin.get(&sid).cloned()
@@ -831,7 +831,7 @@ fn create_style(s: &mut Session, v: &Value) -> CmdResult {
 
 fn modify_style(s: &mut Session, v: &Value) -> CmdResult {
     let id = style_id(s, p::req_str(v, "style")?)?;
-    let chr: Option<wordcraft_doc::CharProps> =
+    let chr: Option<woant_office_doc::CharProps> =
         v.get("chr").map(|c| serde_json::from_value(c.clone())).transpose().map_err(|e| CmdError::Params(e.to_string()))?;
     let para: Option<ParaProps> =
         v.get("para").map(|c| serde_json::from_value(c.clone())).transpose().map_err(|e| CmdError::Params(e.to_string()))?;
@@ -1012,7 +1012,7 @@ fn own_format(st: &Style) -> Value {
             f.insert(k.into(), json!(b));
         }
     }
-    if let Some(wordcraft_doc::TextColor::Rgb(rgb)) = c.color {
+    if let Some(woant_office_doc::TextColor::Rgb(rgb)) = c.color {
         f.insert("color".into(), json!(rgb.hex()));
     }
     let pp = &st.para;

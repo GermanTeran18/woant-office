@@ -4997,7 +4997,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
 
 [[package]]
-name = "wordcraft"
+name = "woant-office"
 version = "0.5.0"
 dependencies = [
  "arboard",
@@ -5011,30 +5011,30 @@ dependencies = [
  "rfd",
  "serde_json",
  "winresource",
- "wordcraft-control-key",
- "wordcraft-doc",
- "wordcraft-engine",
- "wordcraft-ui-egui",
+ "woant-office-control-key",
+ "woant-office-doc",
+ "woant-office-engine",
+ "woant-office-ui-egui",
 ]
 
 [[package]]
-name = "wordcraft-cli"
+name = "woant-office-cli"
 version = "0.5.0"
 dependencies = [
  "serde_json",
- "wordcraft-doc",
- "wordcraft-engine",
- "wordcraft-mcp",
- "wordcraft-render",
- "wordcraft-zotero",
+ "woant-office-doc",
+ "woant-office-engine",
+ "woant-office-mcp",
+ "woant-office-render",
+ "woant-office-zotero",
 ]
 
 [[package]]
-name = "wordcraft-control-key"
+name = "woant-office-control-key"
 version = "0.5.0"
 
 [[package]]
-name = "wordcraft-doc"
+name = "woant-office-doc"
 version = "0.5.0"
 dependencies = [
  "proptest",
@@ -5042,11 +5042,11 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.21",
  "unicode-segmentation",
- "wordcraft-geom",
+ "woant-office-geom",
 ]
 
 [[package]]
-name = "wordcraft-docbin"
+name = "woant-office-docbin"
 version = "0.5.0"
 dependencies = [
  "cfb",
@@ -5054,12 +5054,12 @@ dependencies = [
  "proptest",
  "serde_json",
  "thiserror 2.0.21",
- "wordcraft-doc",
- "wordcraft-geom",
+ "woant-office-doc",
+ "woant-office-geom",
 ]
 
 [[package]]
-name = "wordcraft-docx"
+name = "woant-office-docx"
 version = "0.5.0"
 dependencies = [
  "aes",
@@ -5074,14 +5074,14 @@ dependencies = [
  "sha1",
  "sha2",
  "thiserror 2.0.21",
- "wordcraft-doc",
- "wordcraft-geom",
+ "woant-office-doc",
+ "woant-office-geom",
  "zeroize",
  "zip",
 ]
 
 [[package]]
-name = "wordcraft-engine"
+name = "woant-office-engine"
 version = "0.5.0"
 dependencies = [
  "image",
@@ -5092,22 +5092,22 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.21",
- "wordcraft-doc",
- "wordcraft-docbin",
- "wordcraft-docx",
- "wordcraft-fonts",
- "wordcraft-formats",
- "wordcraft-geom",
- "wordcraft-layout",
- "wordcraft-pdf",
- "wordcraft-proof",
- "wordcraft-render",
+ "woant-office-doc",
+ "woant-office-docbin",
+ "woant-office-docx",
+ "woant-office-fonts",
+ "woant-office-formats",
+ "woant-office-geom",
+ "woant-office-layout",
+ "woant-office-pdf",
+ "woant-office-proof",
+ "woant-office-render",
  "zeroize",
  "zip",
 ]
 
 [[package]]
-name = "wordcraft-fonts"
+name = "woant-office-fonts"
 version = "0.5.0"
 dependencies = [
  "harfrust 0.13.3",
@@ -5118,27 +5118,27 @@ dependencies = [
 ]
 
 [[package]]
-name = "wordcraft-formats"
+name = "woant-office-formats"
 version = "0.5.0"
 dependencies = [
  "image",
  "log",
  "proptest",
  "quick-xml",
- "wordcraft-doc",
- "wordcraft-geom",
+ "woant-office-doc",
+ "woant-office-geom",
  "zip",
 ]
 
 [[package]]
-name = "wordcraft-geom"
+name = "woant-office-geom"
 version = "0.5.0"
 dependencies = [
  "serde",
 ]
 
 [[package]]
-name = "wordcraft-layout"
+name = "woant-office-layout"
 version = "0.5.0"
 dependencies = [
  "image",
@@ -5150,26 +5150,26 @@ dependencies = [
  "unicode-bidi",
  "unicode-linebreak",
  "unicode-segmentation",
- "wordcraft-doc",
- "wordcraft-fonts",
- "wordcraft-geom",
- "wordcraft-proof",
+ "woant-office-doc",
+ "woant-office-fonts",
+ "woant-office-geom",
+ "woant-office-proof",
 ]
 
 [[package]]
-name = "wordcraft-mcp"
+name = "woant-office-mcp"
 version = "0.5.0"
 dependencies = [
  "log",
  "serde_json",
- "wordcraft-control-key",
- "wordcraft-doc",
- "wordcraft-engine",
- "wordcraft-render",
+ "woant-office-control-key",
+ "woant-office-doc",
+ "woant-office-engine",
+ "woant-office-render",
 ]
 
 [[package]]
-name = "wordcraft-metafile"
+name = "woant-office-metafile"
 version = "0.5.0"
 dependencies = [
  "kurbo",
@@ -5177,7 +5177,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "wordcraft-pdf"
+name = "woant-office-pdf"
 version = "0.5.0"
 dependencies = [
  "hayro-cmap",
@@ -5189,15 +5189,15 @@ dependencies = [
  "kurbo",
  "log",
  "thiserror 2.0.21",
- "wordcraft-doc",
- "wordcraft-fonts",
- "wordcraft-geom",
- "wordcraft-layout",
- "wordcraft-metafile",
+ "woant-office-doc",
+ "woant-office-fonts",
+ "woant-office-geom",
+ "woant-office-layout",
+ "woant-office-metafile",
 ]
 
 [[package]]
-name = "wordcraft-proof"
+name = "woant-office-proof"
 version = "0.5.0"
 dependencies = [
  "log",
@@ -5206,21 +5206,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "wordcraft-render"
+name = "woant-office-render"
 version = "0.5.0"
 dependencies = [
  "image",
  "log",
  "vello_cpu 0.2.0",
- "wordcraft-doc",
- "wordcraft-fonts",
- "wordcraft-geom",
- "wordcraft-layout",
- "wordcraft-metafile",
+ "woant-office-doc",
+ "woant-office-fonts",
+ "woant-office-geom",
+ "woant-office-layout",
+ "woant-office-metafile",
 ]
 
 [[package]]
-name = "wordcraft-ui-egui"
+name = "woant-office-ui-egui"
 version = "0.5.0"
 dependencies = [
  "egui",
@@ -5232,18 +5232,18 @@ dependencies = [
  "serde_json",
  "sys-locale",
  "toml",
- "wordcraft-doc",
- "wordcraft-engine",
- "wordcraft-fonts",
- "wordcraft-geom",
- "wordcraft-layout",
- "wordcraft-render",
- "wordcraft-zotero",
+ "woant-office-doc",
+ "woant-office-engine",
+ "woant-office-fonts",
+ "woant-office-geom",
+ "woant-office-layout",
+ "woant-office-render",
+ "woant-office-zotero",
  "zip",
 ]
 
 [[package]]
-name = "wordcraft-web"
+name = "woant-office-web"
 version = "0.5.0"
 dependencies = [
  "eframe",
@@ -5255,23 +5255,23 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "wordcraft-doc",
- "wordcraft-engine",
- "wordcraft-ui-egui",
+ "woant-office-doc",
+ "woant-office-engine",
+ "woant-office-ui-egui",
 ]
 
 [[package]]
-name = "wordcraft-zotero"
+name = "woant-office-zotero"
 version = "0.5.0"
 dependencies = [
  "log",
  "proptest",
  "serde_json",
  "thiserror 2.0.21",
- "wordcraft-doc",
- "wordcraft-docx",
- "wordcraft-engine",
- "wordcraft-formats",
+ "woant-office-doc",
+ "woant-office-docx",
+ "woant-office-engine",
+ "woant-office-formats",
 ]
 
 [[package]]

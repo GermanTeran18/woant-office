@@ -105,7 +105,7 @@ fn content(app: &mut WordApp, ui: &mut egui::Ui, t: &Tokens) {
     }
     let size = st.get("size").and_then(Value::as_f64).map(|s| if s.fract() == 0.0 { format!("{s:.0}") } else { s.to_string() }).unwrap_or_default();
     let sizes: Vec<String> =
-        wordcraft_engine::cmd::format::SIZES.iter().map(|s| if s.fract() == 0.0 { format!("{s:.0}") } else { s.to_string() }).collect();
+        woant_office_engine::cmd::format::SIZES.iter().map(|s| if s.fract() == 0.0 { format!("{s:.0}") } else { s.to_string() }).collect();
     if let Some(v) = widgets::combo(ui, "mini_size", COMBO_SIZE_W, &size, &sizes, None)
         && let Ok(x) = v.trim().parse::<f64>()
     {
@@ -125,13 +125,13 @@ fn content(app: &mut WordApp, ui: &mut egui::Ui, t: &Tokens) {
         highlight_menu(ui, app);
     });
     let fc = app.canvas.last_font_color.clone();
-    let sw = wordcraft_doc::Rgb::parse(&fc).map(crate::theme::c32);
+    let sw = woant_office_doc::Rgb::parse(&fc).map(crate::theme::c32);
     widgets::split(ui, app, "fontcolor", "Font Color", "format.color", json!({"color": fc}), false, sw, |ui, app| {
         font_color_menu(ui, app);
     });
     sep(ui, t);
 
-    use wordcraft_doc::Align as A;
+    use woant_office_doc::Align as A;
     widgets::small(ui, app, "alignLeft", None, "Align Left", "para.alignLeft", json!({}), align == A::Left);
     widgets::small(ui, app, "alignCenter", None, "Center", "para.alignCenter", json!({}), align == A::Center);
     widgets::small(ui, app, "alignRight", None, "Align Right", "para.alignRight", json!({}), align == A::Right);
@@ -148,7 +148,7 @@ fn sep(ui: &mut egui::Ui, t: &Tokens) {
 /// Highlight colour grid, matching the ribbon's.
 fn highlight_menu(ui: &mut egui::Ui, app: &mut WordApp) {
     egui::Grid::new("mini_hl").spacing(Vec2::new(3.0, 3.0)).show(ui, |ui| {
-        for (i, h) in wordcraft_doc::props::Highlight::ALL.iter().enumerate().skip(1) {
+        for (i, h) in woant_office_doc::props::Highlight::ALL.iter().enumerate().skip(1) {
             let Some(c) = h.rgb() else { continue };
             let (r, resp) = ui.allocate_exact_size(Vec2::new(18.0, 18.0), Sense::click());
             ui.painter().rect_filled(r, 2.0, egui::Color32::from_rgb(c.0, c.1, c.2));

@@ -87,19 +87,13 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
                 }
             }
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
-                for (label, id) in [("About", "about"), ("Discord community", "discord")] {
-                    let (r, resp) = ui.allocate_exact_size(vec2(200.0, 32.0), Sense::click());
-                    if resp.hovered() {
-                        ui.painter().rect_filled(r, 0.0, egui::Color32::from_white_alpha(26));
-                    }
-                    ui.painter().text(pos2(r.min.x + 22.0, r.center().y), Align2::LEFT_CENTER, tl!(label), regular(13.0), egui::Color32::WHITE);
-                    if resp.clicked() {
-                        if id == "discord" {
-                            let _ = app.run("ui.discord", json!({}));
-                        } else {
-                            app.dialog = crate::dialogs::Dialog::open("about", app);
-                        }
-                    }
+                let (r, resp) = ui.allocate_exact_size(vec2(200.0, 32.0), Sense::click());
+                if resp.hovered() {
+                    ui.painter().rect_filled(r, 0.0, egui::Color32::from_white_alpha(26));
+                }
+                ui.painter().text(pos2(r.min.x + 22.0, r.center().y), Align2::LEFT_CENTER, tl!("About"), regular(13.0), egui::Color32::WHITE);
+                if resp.clicked() {
+                    app.dialog = crate::dialogs::Dialog::open("about", app);
                 }
             });
         });
@@ -137,11 +131,11 @@ fn template_tile(ui: &mut Ui, app: &mut WordApp, label: &str, template: &str) {
         let ppp = ui.ctx().pixels_per_point();
         let key = format!("tpl:{template}:{ppp}");
         let tex = ui.ctx().data(|d| d.get_temp::<egui::TextureHandle>(egui::Id::new(&key))).or_else(|| {
-            let mut s = wordcraft_engine::Session::new(wordcraft_doc::Document::new());
+            let mut s = woant_office_engine::Session::new(woant_office_doc::Document::new());
             let _ = s.run("file.new", &json!({"template": template}));
             let l = s.export_layout();
             let page = l.pages.first()?;
-            let img = wordcraft_render::render_page(&s.doc, page, 150.0 / page.w * ppp, &crate::canvas::screen_render_options());
+            let img = woant_office_render::render_page(&s.doc, page, 150.0 / page.w * ppp, &crate::canvas::screen_render_options());
             let px = img.to_straight();
             let h = ui.ctx().load_texture(
                 &key,
@@ -183,7 +177,7 @@ fn matching_templates(query: &str) -> Vec<(&'static str, &'static str)> {
 /// Home: a greeting, Blank plus a short row of templates with a link to New, then Recent.
 fn home_page(app: &mut WordApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
-    let hour = wordcraft_engine::cmd::now_iso().get(11..13).and_then(|h| h.parse::<u32>().ok()).unwrap_or(9);
+    let hour = woant_office_engine::cmd::now_iso().get(11..13).and_then(|h| h.parse::<u32>().ok()).unwrap_or(9);
     heading(
         ui,
         if hour < 12 {
@@ -381,7 +375,7 @@ fn options_page(app: &mut WordApp, ui: &mut Ui) {
     // The browser can't write to the user's files, so AutoSave can't be turned on there (#176).
     let browser = app.autosave_block() == Some(crate::AutoSaveBlock::Browser);
     let mut autosave = app.autosave && !browser;
-    let r = ui.add_enabled(!browser, egui::Checkbox::new(&mut autosave, tl!("AutoSave documents you have saved in WordCraft")));
+    let r = ui.add_enabled(!browser, egui::Checkbox::new(&mut autosave, tl!("AutoSave documents you have saved in Woant Office")));
     if browser {
         r.on_disabled_hover_text(crate::AutoSaveBlock::Browser.reason());
     } else if r.changed() {
@@ -396,7 +390,6 @@ fn options_page(app: &mut WordApp, ui: &mut Ui) {
     {
         let _ = app.run("view.darkMode", json!({"value": dark_page}));
     }
-    ui.checkbox(&mut app.ui.show_discord, tl!("Show the community button in the title bar"));
     ui.add_space(10.0);
     ui.label(egui::RichText::new(tl!("Display")).font(semibold(15.0)));
     let mut marks = app.session.view.marks;
@@ -423,7 +416,7 @@ fn options_page(app: &mut WordApp, ui: &mut Ui) {
     });
     ui.add_space(10.0);
     ui.label(egui::RichText::new(tl!("Agents")).font(semibold(15.0)));
-    ui.label(tl!("Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel."));
+    ui.label(tl!("Every command is available to scripts and AI agents: run `woant-office-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel."));
 }
 
 /// File ▸ Options ▸ Interface theme: Light, Dark, or follow the system's appearance (#115).
@@ -510,7 +503,7 @@ mod tests {
     /// and Recent; New has every template and no Recent list.
     #[test]
     fn home_and_new_show_different_sections() {
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
+        let mut a = WordApp::new(woant_office_engine::Session::new(woant_office_doc::Document::new()), Services::default());
         a.run("ui.backstage", json!({"value": true, "page": "home"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -547,7 +540,7 @@ mod tests {
             })),
             ..Default::default()
         };
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::from_text("XYZ")), services);
+        let mut a = WordApp::new(woant_office_engine::Session::new(woant_office_doc::Document::from_text("XYZ")), services);
         a.session.author = "GAMMA".into();
         a.run("ui.backstage", json!({"value": true, "page": "info"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
@@ -578,7 +571,7 @@ mod tests {
         a.run("file.save", json!({})).unwrap();
         a.run("file.save", json!({})).unwrap();
         let (name, bytes) = got.borrow_mut().pop().unwrap();
-        let back = wordcraft_engine::io::open_bytes(&name, &bytes).unwrap();
+        let back = woant_office_engine::io::open_bytes(&name, &bytes).unwrap();
         assert_eq!((back.core.title.as_str(), back.core.creator.as_str()), ("ALPHA", "BETA"));
         assert_eq!(back.core.last_modified_by, "GAMMA");
         assert_eq!(back.core.revision, core.revision + 2, "each save advances the revision");

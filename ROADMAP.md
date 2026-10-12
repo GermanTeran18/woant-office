@@ -1,10 +1,10 @@
-# WordCraft roadmap
+# Woant Office roadmap
 
 **Stage: alpha** · next: beta, ~15 points (60% → 75% ready for real work) and ~150–230 h away
 
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-11 · **Change:** trivial (Turkish interface landed; previously trivial: formatting revisions landed, #41; previously trivial: Draw tab ink, #307, and Draw Table and Eraser, #303, landed: catalog 402/434; previously minor: readiness table with hours per audience; full number back to the additive weighted sum, 60%; mainstream and essentials numbers added; alpha gate checked; previously major: full re-measure against Word for Mac 16.113.4; restructured to the craftrules progress-docs standard) · **Target:** Microsoft Word (Microsoft 365) for Mac 16.113.4
 
-WordCraft aims for complete parity with Microsoft Word, then goes further on speed, openness and
+Woant Office aims for complete parity with Microsoft Word, then goes further on speed, openness and
 agent control. This page is the summary; the assessment is
 [`docs/target-app-parity.md`](docs/target-app-parity.md), the work list is
 [`docs/gaps.md`](docs/gaps.md), and milestones and the current focus are in

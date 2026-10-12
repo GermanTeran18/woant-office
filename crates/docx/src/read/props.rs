@@ -2,12 +2,12 @@
 
 use std::collections::HashMap;
 
-use wordcraft_doc::para::cap_alt;
-use wordcraft_doc::props::{
+use woant_office_doc::para::cap_alt;
+use woant_office_doc::props::{
     Align, Border, BorderStyle, Borders, CellProps, CharProps, HeightRule, Highlight, LineSpacing, NumRef, ParaProps, Rgb, RowProps, TabAlign,
     TabLeader, TabStop, TableFloat, TableLook, TableProps, TextColor, TextDirection, Underline, VAlign, VMerge, VertAlign,
 };
-use wordcraft_doc::section::{
+use woant_office_doc::section::{
     Columns, DocGrid, DocGridType, LineNumberRestart, LineNumbering, MAX_CHAR_SPACE, MAX_GRID_PITCH, NotePos, NoteProps, NoteRestart, NumFormat,
     SectionProps, SectionStart,
 };
@@ -564,14 +564,14 @@ pub fn note_pr(e: &El, fmt: bool) -> NoteProps {
     NoteProps {
         pos: e.child_val("w:pos").and_then(NotePos::from_ooxml),
         num_fmt: if fmt { e.child_val("w:numFmt").map(NumFormat::from_ooxml) } else { None },
-        num_start: e.child_val("w:numStart").and_then(int).map(|v| v.clamp(1, wordcraft_doc::section::MAX_NOTE_START as i64) as u32),
+        num_start: e.child_val("w:numStart").and_then(int).map(|v| v.clamp(1, woant_office_doc::section::MAX_NOTE_START as i64) as u32),
         num_restart: e.child_val("w:numRestart").and_then(NoteRestart::from_ooxml),
     }
 }
 
 /// `w:tblpPr`: a floating table's anchors, offsets or alignments and distances from text.
 fn table_float(e: &El) -> TableFloat {
-    use wordcraft_doc::para::{Anchor, FloatAlign};
+    use woant_office_doc::para::{Anchor, FloatAlign};
     let pt = |n: &str| e.attr(n).and_then(|v| measure(v, 20.0)).map(|v| v.clamp(-31_680.0, 31_680.0)).unwrap_or(0.0);
     let dist = |n: &str| pt(n).clamp(0.0, 1584.0);
     let rel = |n: &str, text: Anchor| match e.attr(n) {

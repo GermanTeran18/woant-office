@@ -3,7 +3,7 @@
 
 use egui::{Stroke, Ui, vec2};
 use serde_json::{Value, json};
-use wordcraft_doc::{Pos, StoryRef};
+use woant_office_doc::{Pos, StoryRef};
 
 use crate::WordApp;
 use crate::theme::{Tokens, regular, semibold};
@@ -265,8 +265,8 @@ fn styles(app: &mut WordApp, ui: &mut Ui) {
         .styles
         .styles
         .iter()
-        .filter(|s| !s.hidden && s.kind != wordcraft_doc::StyleKind::Table)
-        .map(|s| (s.id.clone(), crate::i18n::style_name(s), s.kind == wordcraft_doc::StyleKind::Character))
+        .filter(|s| !s.hidden && s.kind != woant_office_doc::StyleKind::Table)
+        .map(|s| (s.id.clone(), crate::i18n::style_name(s), s.kind == woant_office_doc::StyleKind::Character))
         .collect();
     list.sort_by_key(|s| s.1.to_lowercase());
     egui::ScrollArea::vertical().show(ui, |ui| {
@@ -450,7 +450,7 @@ fn inspector(app: &mut WordApp, ui: &mut Ui) {
     }
     // Read-only, so call it directly: running the command every frame would pay for the command
     // machinery and consume per-command state (a pending `join_next_undo`) just to draw the pane.
-    let r = wordcraft_engine::cmd::inspector::inspect(&app.session);
+    let r = woant_office_engine::cmd::inspector::inspect(&app.session);
     let t = Tokens::get(ui.ctx());
     let none = tl!("None").to_string();
     let para = &r["paragraph"];

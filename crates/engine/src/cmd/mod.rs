@@ -41,8 +41,8 @@ pub mod view;
 pub mod wordart;
 
 use serde_json::{Value, json};
-use wordcraft_doc::props::CharProps;
-use wordcraft_doc::{Pos, Revision, RevisionKind, StoryRef};
+use woant_office_doc::props::CharProps;
+use woant_office_doc::{Pos, Revision, RevisionKind, StoryRef};
 
 use crate::{CmdError, CmdResult, Registry, Session};
 
@@ -150,15 +150,15 @@ pub fn new_revision(s: &mut Session, kind: RevisionKind) -> u32 {
 
 /// Whether the paragraph at `path` is followed by another paragraph in the same container (so
 /// its paragraph mark can be removed by joining the two).
-pub fn has_next_para(s: &Session, story: StoryRef, path: &wordcraft_doc::Path) -> bool {
-    matches!(s.doc.block(story, &path.with_last(path.last().saturating_add(1))), Some(wordcraft_doc::Block::Para(_)))
+pub fn has_next_para(s: &Session, story: StoryRef, path: &woant_office_doc::Path) -> bool {
+    matches!(s.doc.block(story, &path.with_last(path.last().saturating_add(1))), Some(woant_office_doc::Block::Para(_)))
 }
 
 /// Remove the paragraph mark of the paragraph at `path`: the next paragraph in the same container
 /// joins it. The joined paragraph keeps this paragraph's properties and ends with the next one's
 /// mark (and that mark's revisions). Returns `false`, changing nothing, when no paragraph follows
 /// in the container (a story's or cell's last mark can't be removed).
-pub fn join_next_para(s: &mut Session, story: StoryRef, path: &wordcraft_doc::Path) -> Result<bool, CmdError> {
+pub fn join_next_para(s: &mut Session, story: StoryRef, path: &woant_office_doc::Path) -> Result<bool, CmdError> {
     if !has_next_para(s, story, path) {
         return Ok(false);
     }
@@ -272,13 +272,13 @@ fn insert_text(s: &mut Session, text: &str, enter: bool) -> Result<(), CmdError>
 
 /// Take a paragraph out of its list like Word does when Enter or Backspace ends a list: a
 /// "List Paragraph" goes back to Normal; any other style keeps itself with numbering switched off.
-pub fn leave_list(para: &mut wordcraft_doc::Paragraph) {
+pub fn leave_list(para: &mut woant_office_doc::Paragraph) {
     if para.props.style.as_deref() == Some("ListParagraph") {
         para.props.style = None;
         para.props.numbering = None;
     } else {
         // `num: 0` overrides numbering a style may carry.
-        para.props.numbering = Some(wordcraft_doc::props::NumRef { num: 0, level: 0 });
+        para.props.numbering = Some(woant_office_doc::props::NumRef { num: 0, level: 0 });
     }
     para.props.indent_left = None;
     para.props.indent_first = None;
@@ -303,7 +303,7 @@ fn split_para_as(s: &mut Session, at: &Pos, enter: bool) -> Result<Pos, CmdError
         // the list (Word behaviour).
         let para = s.doc.para_mut(at.story, &at.path)?;
         if n.level > 0 {
-            para.props.numbering = Some(wordcraft_doc::props::NumRef { num: n.num, level: n.level - 1 });
+            para.props.numbering = Some(woant_office_doc::props::NumRef { num: n.num, level: n.level - 1 });
             para.touch();
         } else {
             leave_list(para);

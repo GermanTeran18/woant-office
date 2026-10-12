@@ -10,14 +10,14 @@
 # Clean room: every entry was written from the plain meaning of the English label in ordinary
 # computing vocabulary. No Microsoft Word (or other product) localisation, string table or
 # translated UI was consulted or copied; add entries the same way.
-# Product, format and technology names (WordCraft, PDF, Markdown, MCP …) stay in Latin letters.
+# Product, format and technology names (Woant Office, PDF, Markdown, MCP …) stay in Latin letters.
 
 	(no style)	（无样式）
 	(no suggestions)	（无建议）
 	1.5 Line Spacing	1.5 倍行距
-	A free, open-source word processor written from scratch in Rust.\nPart of the Crafting Apps from the ArtCraft team.	一款用 Rust 从零编写的免费开源文字处理软件。\n属于 ArtCraft 团队的 Crafting Apps 系列。
+	A free, open-source word processor written from scratch in Rust.\nA fork of WordCraft.	一款用 Rust 从零编写的免费开源文字处理软件。\nWordCraft 的分支版本。
 	About	关于
-	About WordCraft	关于 WordCraft
+	About Woant Office	关于 Woant Office
 	Accept	接受
 	Accept All Changes	接受所有修订
 	Accept This Change	接受此修订
@@ -72,7 +72,7 @@
 	Automatic Table 1 (3 levels)	自动目录 1（3 级）
 	Automatic Table 2 (2 levels)	自动目录 2（2 级）
 	AutoSave	自动保存
-	AutoSave documents you have saved in WordCraft	自动保存在 WordCraft 中保存过的文档
+	AutoSave documents you have saved in Woant Office	自动保存在 Woant Office 中保存过的文档
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	自动保存失败：{error}。重新保存文档后将恢复自动保存。
 	Balloons	批注框
 	Bottom Margin	下边距
@@ -240,7 +240,6 @@
 	Comment	批注
 	Comments	批注
 	Comments Pane	批注窗格
-	Community\nDiscord	社区\nDiscord
 	Compact	紧凑
 	Compare	比较
 	Compress Pictures	压缩图片
@@ -293,8 +292,6 @@
 	Dictate	听写
 	Different First Page	首页不同
 	Different Odd & Even Pages	奇偶页不同
-	Discord	Discord
-	Discord community	Discord 社区
 	Display	显示
 	Display for Review	显示以供审阅
 	Distribute Columns	平均分布各列
@@ -341,7 +338,7 @@
 	Equation	公式
 	Eraser	橡皮擦
 	Even Page	偶数页
-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	每个命令都可供脚本和 AI 智能体使用：运行 `wordcraft-cli mcp` 启动 MCP 服务器，或使用 `--control <port>` 启动应用以打开 JSON 控制通道。
+	Every command is available to scripts and AI agents: run `woant-office-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	每个命令都可供脚本和 AI 智能体使用：运行 `woant-office-cli mcp` 启动 MCP 服务器，或使用 `--control <port>` 启动应用以打开 JSON 控制通道。
 	Export	导出
 	Export a copy to share (PDF, Word document)	导出副本以共享（PDF、Word 文档）
 	Export Page as PNG	将页面导出为 PNG
@@ -451,8 +448,6 @@
 	Inspect Document	检查文档
 	Interface language:	界面语言：
 	Italic	倾斜
-	Join the ArtCraft community on Discord	加入 Discord 上的 ArtCraft 社区
-	Join us on Discord: discord.gg/artcraft	在 Discord 上加入我们：discord.gg/artcraft
 	Justify	两端对齐
 	Keep Lines Together	段中不分页
 	Keep lines together	段中不分页
@@ -753,7 +748,6 @@
 	Show only comments and formatting in balloons	仅在批注框中显示批注和格式
 	Show revisions in balloons	在批注框中显示修订
 	Show rulers	显示标尺
-	Show the community button in the title bar	在标题栏中显示社区按钮
 	Show/Hide ¶	显示/隐藏 ¶
 	Show\nComments	显示批注
 	Shrink Font 1 Point	字号减小 1 磅
@@ -769,7 +763,7 @@
 	Small caps	小型大写字母
 	SmartArt	SmartArt
 	Sort	排序
-	Source code: github.com/storytold/wordcraft	源代码：github.com/storytold/wordcraft
+	Source code: github.com/GermanTeran18/woant-office	源代码：github.com/GermanTeran18/woant-office
 	Space	空格
 	Space before/after:	段前/段后间距：
 	Spacing	间距
@@ -902,7 +896,7 @@
 	Word Left	左移一个单词
 	Word Right	右移一个单词
 	WordArt	艺术字
-	WordCraft	WordCraft
+	Woant Office	Woant Office
 	Words	字数
 	Words only	仅字词
 	Wrap Text	环绕文字
@@ -1149,7 +1143,6 @@
 	Insert a new equation (Alt+=)	插入新公式 (Alt+=)
 	Leave the equation (Esc)	退出公式 (Esc)
 	Preview	预览
-	getartcraft.com/apps/wordcraft	getartcraft.com/apps/wordcraft
 	Draw Ink	绘制墨迹
 	Erase Ink	擦除墨迹
 	Hide Ink	隐藏墨迹
@@ -1287,7 +1280,7 @@
 	The document will be saved with a password. Save it to protect it.	文档将使用密码保存。保存文档以保护它。
 	The password is removed. Save the document to keep the change.	密码已删除。保存文档以保留此更改。
 	The passwords don't match.	两次输入的密码不一致。
-	Keep the password somewhere safe: without it nobody, WordCraft included, can open the document. Leave both boxes empty to remove the password.	请妥善保管密码：没有密码，任何人（包括 WordCraft）都无法打开文档。两个框都留空可删除密码。
+	Keep the password somewhere safe: without it nobody, Woant Office included, can open the document. Leave both boxes empty to remove the password.	请妥善保管密码：没有密码，任何人（包括 Woant Office）都无法打开文档。两个框都留空可删除密码。
 
 # Interface text routed through translation (#313)
 	Align Top Left	靠上左对齐

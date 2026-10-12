@@ -3,13 +3,13 @@
 //! results are what Word produces for the same keys.
 
 use serde_json::json;
-use wordcraft_doc::props::{BorderStyle, VertAlign};
-use wordcraft_doc::{Pos, StoryRef};
+use woant_office_doc::props::{BorderStyle, VertAlign};
+use woant_office_doc::{Pos, StoryRef};
 
 use crate::Session;
 
 fn s() -> Session {
-    Session::new(wordcraft_doc::Document::new())
+    Session::new(woant_office_doc::Document::new())
 }
 
 fn run(s: &mut Session, id: &str, v: serde_json::Value) {
@@ -148,7 +148,7 @@ fn list_autoformat_triggers() {
     assert_eq!(paras(&s), vec![para("Alpha", Some(0)), para("beta", Some(0))]);
     assert_eq!(label_at(&s, 0), "%1.");
     let n = s.doc.para_at(&Pos::body(0, 0)).and_then(|p| p.props.numbering).unwrap();
-    assert_eq!(s.doc.numbering.level(n.num, 0).map(|l| l.format), Some(wordcraft_doc::section::NumFormat::LowerLetter));
+    assert_eq!(s.doc.numbering.level(n.num, 0).map(|l| l.format), Some(woant_office_doc::section::NumFormat::LowerLetter));
 }
 
 #[test]
@@ -189,11 +189,11 @@ fn autocorrect_as_you_type() {
 fn autocorrect_options_change_what_typing_does() {
     let mut s = s();
     // A user entry, a deleted built-in entry, an added exception; names of days.
-    run(&mut s, "tools.autocorrect", json!({"add": {"from": "wc", "to": "WordCraft"}}));
+    run(&mut s, "tools.autocorrect", json!({"add": {"from": "wc", "to": "Woant Office"}}));
     run(&mut s, "tools.autocorrect", json!({"delete": "teh"}));
     run(&mut s, "tools.autocorrect", json!({"addException": "approx."}));
     typ(&mut s, "wc ships on monday. teh end is approx. three weeks ");
-    assert_eq!(s.doc.plain_text(StoryRef::Body), "WordCraft ships on Monday. Teh end is approx. three weeks ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "Woant Office ships on Monday. Teh end is approx. three weeks ");
     // AutoFormat options off: straight quotes, no dashes, no list; sentences not capitalised.
     let mut s = self::s();
     run(&mut s, "tools.autocorrect", json!({"smartQuotes": false, "dashes": false, "bullets": false, "capSentences": false, "capDays": false}));
@@ -259,7 +259,7 @@ fn border_line_autoformat() {
 
 #[test]
 fn a_large_mixed_document_types_like_word() {
-    // The corpus typed into Word and WordCraft side by side; the paragraph structure must match.
+    // The corpus typed into Word and Woant Office side by side; the paragraph structure must match.
     let mut s = s();
     let prose = "The keeper's log runs to four hundred pages, and almost every one begins with the weather. ";
     typ(&mut s, &format!("Notes\n{}\n", prose.repeat(20)));
@@ -428,7 +428,7 @@ fn undoing_bold_at_the_caret_turns_bold_typing_off_again() {
     assert_eq!(p.text, "abc");
     assert_ne!(p.props_of_char(0).bold, Some(true));
     // Redo brings bold typing back.
-    let mut s = Session::new(wordcraft_doc::Document::new());
+    let mut s = Session::new(woant_office_doc::Document::new());
     run(&mut s, "format.bold", json!({"value": true}));
     run(&mut s, "edit.undo", json!({}));
     run(&mut s, "edit.redo", json!({}));
@@ -537,7 +537,7 @@ fn shift_f5_goes_back_through_the_last_edits() {
     assert_eq!(back(), Pos::body(1, 3));
     assert_eq!(back(), Pos::body(0, 3));
     assert_eq!(back(), Pos::body(2, 5), "then round again");
-    assert!(Session::new(wordcraft_doc::Document::new()).run("edit.goBack", &json!({})).is_err(), "nothing edited yet");
+    assert!(Session::new(woant_office_doc::Document::new()).run("edit.goBack", &json!({})).is_err(), "nothing edited yet");
 }
 
 #[test]

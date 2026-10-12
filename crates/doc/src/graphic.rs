@@ -1,4 +1,4 @@
-//! Charts and SmartArt diagrams: drawings kept as neutral items ready to draw. Charts WordCraft can
+//! Charts and SmartArt diagrams: drawings kept as neutral items ready to draw. Charts Woant Office can
 //! edit also keep their [`crate::chart::ChartSpec`]; the rest are shown, not edited.
 
 use serde::{Deserialize, Serialize};
@@ -24,14 +24,14 @@ pub struct Graphic {
     /// only these items). `None` for graphics made some other way.
     #[serde(skip)]
     pub source: Option<std::sync::Arc<Embedded>>,
-    /// A chart WordCraft can edit (one it made, or one read back that holds nothing more): saving
+    /// A chart Woant Office can edit (one it made, or one read back that holds nothing more): saving
     /// writes the chart part from it, and the items are drawn from it. See [`crate::chart`].
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub chart: Option<std::sync::Arc<crate::chart::ChartSpec>>,
 }
 
 /// What an object read from a file needs to be written back as it was: its own markup in the
-/// source format and the package parts that markup refers to. Never edited; WordCraft only moves
+/// source format and the package parts that markup refers to. Never edited; Woant Office only moves
 /// and resizes the object around it. The parts themselves (bytes, content type and their own
 /// relationships) are kept in [`crate::Document::passthrough`] under their part names.
 #[derive(Clone, Debug, Default, PartialEq)]

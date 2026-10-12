@@ -4,10 +4,10 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use wordcraft_doc::edit::Fragment;
-use wordcraft_doc::props::CharProps;
-use wordcraft_doc::{Document, Path, Pos, StoryRef};
-use wordcraft_layout::{DocLayout, LayoutCache, LayoutOptions, ViewMode};
+use woant_office_doc::edit::Fragment;
+use woant_office_doc::props::CharProps;
+use woant_office_doc::{Document, Path, Pos, StoryRef};
+use woant_office_layout::{DocLayout, LayoutCache, LayoutOptions, ViewMode};
 
 use crate::{CmdError, Registry};
 
@@ -226,7 +226,7 @@ pub struct Session {
     /// Author name for comments and tracked changes.
     pub author: String,
     /// Format painter: copied formatting waiting to be applied (and whether it stays on).
-    pub painter: Option<(CharProps, wordcraft_doc::props::ParaProps, bool)>,
+    pub painter: Option<(CharProps, woant_office_doc::props::ParaProps, bool)>,
     /// Last message for the status bar / agents.
     pub status: String,
     /// Undo and redo steps. Shared so `run` can snapshot both stacks cheaply (a pointer per
@@ -304,7 +304,7 @@ pub struct MathEdit {
     /// The equation object (its U+FFFC).
     pub at: Pos,
     /// The caret inside it.
-    pub pos: wordcraft_doc::math_edit::MathPos,
+    pub pos: woant_office_doc::math_edit::MathPos,
 }
 
 /// Editing preferences that persist between runs (the front end saves and restores them).
@@ -315,7 +315,7 @@ pub struct Prefs {
     pub count_notes: bool,
     /// Track Changes Options: what markup shows and how revisions are drawn (per user, as in
     /// Word).
-    pub markup: wordcraft_layout::display::MarkupOptions,
+    pub markup: woant_office_layout::display::MarkupOptions,
     /// Language › Detect language automatically (per user, as in Word).
     pub detect_language: bool,
     /// AutoCorrect Options: replacements, capitalization and AutoFormat As You Type (per user, as
@@ -351,7 +351,7 @@ impl Session {
             goal_x: None,
             page_hint: 0,
             registry: Arc::new(crate::cmd::registry()),
-            author: "WordCraft User".into(),
+            author: "Woant Office User".into(),
             painter: None,
             status: String::new(),
             history: Vec::new(),
@@ -471,7 +471,7 @@ impl Session {
             proofing: self.view.proofing,
             field_codes: self.view.field_codes,
         };
-        let l = Arc::new(wordcraft_layout::layout(&self.doc, &mut self.cache, &opts));
+        let l = Arc::new(woant_office_layout::layout(&self.doc, &mut self.cache, &opts));
         self.layout = Some((self.rev, ww, self.view.mode, l.clone(), self.view.proofing));
         l
     }
@@ -479,7 +479,7 @@ impl Session {
     pub fn export_layout(&self) -> Arc<DocLayout> {
         let opts =
             LayoutOptions { view: ViewMode::Print, web_width: 0.0, show_hidden: false, hide_deleted: false, proofing: false, field_codes: false };
-        Arc::new(wordcraft_layout::layout(&self.doc, &mut LayoutCache::new(), &opts))
+        Arc::new(woant_office_layout::layout(&self.doc, &mut LayoutCache::new(), &opts))
     }
 
     /// Invalidate the cached layout (fonts changed etc.).
@@ -725,7 +725,7 @@ impl Session {
         // The equation being edited must still be there (undo, edits elsewhere).
         if let Some(m) = &self.math {
             let eq = self.doc.para_at(&m.at).and_then(|p| match p.object_at(m.at.off) {
-                Some(wordcraft_doc::InlineObject::Equation { math, .. }) => Some(wordcraft_doc::math_edit::clamp(&math.nodes, &m.pos)),
+                Some(woant_office_doc::InlineObject::Equation { math, .. }) => Some(woant_office_doc::math_edit::clamp(&math.nodes, &m.pos)),
                 _ => None,
             });
             match eq {
@@ -776,7 +776,7 @@ impl Session {
             && (id.starts_with("text.") || id.starts_with("caret.") || id.starts_with("select.") || id.starts_with("edit.paste"))
             && let Some(m) = self.math.take()
         {
-            let off = m.at.off + wordcraft_doc::para::OBJ.len_utf8();
+            let off = m.at.off + woant_office_doc::para::OBJ.len_utf8();
             self.sel = Selection::caret(Pos { off, ..m.at });
         }
         // The undo stacks are snapshotted whole, not as a length: commands run nested commands,

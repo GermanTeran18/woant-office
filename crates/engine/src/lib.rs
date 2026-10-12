@@ -1,4 +1,4 @@
-//! WordCraft engine: the editing session and its commands.
+//! Woant Office engine: the editing session and its commands.
 //!
 //! **Everything is a command.** Each user-visible action is a [`CommandSpec`] with a stable id
 //! (`format.bold`, `insert.table`), a label, the ribbon/menu location, a default shortcut, a
@@ -25,9 +25,9 @@ pub use io::Password;
 pub use keymap::KeyMap;
 pub use ribbon::RibbonLayout;
 pub use session::{ColumnBlock, EditSnapshot, FindState, MathEdit, Prefs, Selection, Session, ViewState};
-pub use wordcraft_doc as doc;
-pub use wordcraft_layout as layout;
-pub use wordcraft_render as render;
+pub use woant_office_doc as doc;
+pub use woant_office_layout as layout;
+pub use woant_office_render as render;
 
 #[derive(Debug, thiserror::Error, Clone, PartialEq)]
 pub enum CmdError {
@@ -41,8 +41,8 @@ pub enum CmdError {
     Failed(String),
 }
 
-impl From<wordcraft_doc::DocError> for CmdError {
-    fn from(e: wordcraft_doc::DocError) -> Self {
+impl From<woant_office_doc::DocError> for CmdError {
+    fn from(e: woant_office_doc::DocError) -> Self {
         CmdError::Failed(e.to_string())
     }
 }

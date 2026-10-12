@@ -130,7 +130,7 @@ pub fn handle(app: &mut WordApp, ctx: &egui::Context, req: &ControlRequest) -> O
             Err(e) => err(e),
         },
         "ui.inspect" => ok(inspect(app, ctx)),
-        "ui.parity" => ok(wordcraft_engine::catalog::parity(&app.session.registry)),
+        "ui.parity" => ok(woant_office_engine::catalog::parity(&app.session.registry)),
         "ui.click" => {
             let (Some(x), Some(y)) = (f("x"), f("y")) else { return err("missing x/y") };
             let button = match s("button") {
@@ -203,7 +203,7 @@ pub fn handle(app: &mut WordApp, ctx: &egui::Context, req: &ControlRequest) -> O
         }
         "ui.screenshot" => Outcome::Screenshot { path: s("path").map(str::to_string) },
         "ui.render" => {
-            let path = s("path").unwrap_or("/tmp/wordcraft-page.png");
+            let path = s("path").unwrap_or("/tmp/woant-office-page.png");
             let page = p.get("page").and_then(Value::as_u64).unwrap_or(1);
             match app.session.run("file.exportPng", &json!({"path": path, "page": page, "scale": f("scale").unwrap_or(2.0)})) {
                 Ok(v) => ok(v),
@@ -235,10 +235,10 @@ pub fn handle(app: &mut WordApp, ctx: &egui::Context, req: &ControlRequest) -> O
 }
 
 pub fn save_screenshot(image: &egui::ColorImage, path: Option<&str>) -> Value {
-    let path = path.unwrap_or("/tmp/wordcraft-screenshot.png");
+    let path = path.unwrap_or("/tmp/woant-office-screenshot.png");
     let [w, h] = image.size;
     let bytes: Vec<u8> = image.pixels.iter().flat_map(|c| c.to_array()).collect();
-    let rendered = wordcraft_render::Rendered { width: w as u32, height: h as u32, pixels: bytes };
+    let rendered = woant_office_render::Rendered { width: w as u32, height: h as u32, pixels: bytes };
     let png = rendered.to_png();
     #[cfg(target_arch = "wasm32")]
     let _ = (&png, path);

@@ -1,4 +1,4 @@
-//! WordCraft proofing.
+//! Woant Office proofing.
 //!
 //! - **Spelling** against the public-domain Moby word list (~160k words, the same list that
 //!   drives hyphenation) plus our supplement of modern words it lacks
@@ -467,9 +467,9 @@ mod tests {
 
     #[test]
     fn user_dictionary_works() {
-        assert!(!is_correct("zxqwordcrafty"));
-        add_word("zxqwordcrafty");
-        assert!(is_correct("zxqwordcrafty"));
+        assert!(!is_correct("zxqwoant-officey"));
+        add_word("zxqwoant-officey");
+        assert!(is_correct("zxqwoant-officey"));
     }
 
     #[test]

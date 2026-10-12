@@ -1,11 +1,11 @@
 //! Blocks, paragraphs, runs, objects and tables → WordprocessingML.
 
-use wordcraft_doc::effects::ShapeEffects;
-use wordcraft_doc::para::{AltText, Anchor, Float, NoteKind, ShapeKind, Wrap};
-use wordcraft_doc::props::{CharProps, PropChange, Rgb};
-use wordcraft_doc::section::{LineNumberRestart, NoteProps, SectionProps, SectionStart};
-use wordcraft_doc::table::Table;
-use wordcraft_doc::{Block, Blocks, InlineObject, Paragraph, RevisionKind};
+use woant_office_doc::effects::ShapeEffects;
+use woant_office_doc::para::{AltText, Anchor, Float, NoteKind, ShapeKind, Wrap};
+use woant_office_doc::props::{CharProps, PropChange, Rgb};
+use woant_office_doc::section::{LineNumberRestart, NoteProps, SectionProps, SectionStart};
+use woant_office_doc::table::Table;
+use woant_office_doc::{Block, Blocks, InlineObject, Paragraph, RevisionKind};
 
 use super::props::{ChangeAttrs, borders, open_change, ppr_inner, rpr, rpr_inner, tblpr, tcpr, trpr};
 use super::{PartRels, Writer};
@@ -121,7 +121,7 @@ impl Writer<'_> {
         let inline = std::mem::take(&mut self.inline_controls);
         // A drop cap is a separate framed paragraph holding the first character.
         if let Some(lines) = p.props.drop_cap.filter(|l| *l > 0)
-            && let Some(first) = p.text.chars().next().filter(|c| !matches!(*c, wordcraft_doc::para::OBJ | '\t' | '\n' | '\u{c}' | '\u{e}'))
+            && let Some(first) = p.text.chars().next().filter(|c| !matches!(*c, woant_office_doc::para::OBJ | '\t' | '\n' | '\u{c}' | '\u{e}'))
             && p.text.len() > first.len_utf8()
         {
             let mut head = p.clone();
@@ -244,7 +244,7 @@ impl Writer<'_> {
                     '\u{000E}' => Some(Piece::Br(Some("column"))),
                     '\u{2011}' => Some(Piece::NbHyphen),
                     '\u{00AD}' => Some(Piece::SoftHyphen),
-                    wordcraft_doc::para::OBJ => {
+                    woant_office_doc::para::OBJ => {
                         let o = p.objects.get(k);
                         k += 1;
                         Some(match o {
@@ -495,7 +495,7 @@ impl Writer<'_> {
                     if let Some(mark) = self.pending_mark.take() {
                         let mut p = props.clone();
                         if p.style.is_none() && p.vert_align.is_none() {
-                            p.vert_align = Some(wordcraft_doc::props::VertAlign::Superscript);
+                            p.vert_align = Some(woant_office_doc::props::VertAlign::Superscript);
                         }
                         self.rev_open(w, props);
                         w.open("w:r", &[]);
@@ -509,7 +509,7 @@ impl Writer<'_> {
                 let nid = self.note_id(*id, foot);
                 let mut p = props.clone();
                 if p.style.is_none() && p.vert_align.is_none() {
-                    p.vert_align = Some(wordcraft_doc::props::VertAlign::Superscript);
+                    p.vert_align = Some(woant_office_doc::props::VertAlign::Superscript);
                 }
                 self.rev_open(w, props);
                 w.open("w:r", &[]);
@@ -526,9 +526,9 @@ impl Writer<'_> {
             }
             // A chart or diagram read from a file: its frame from the object's size and position,
             // the graphic inside as read. Ones made some other way have nothing to write, except
-            // charts with a model (made or edited in WordCraft).
+            // charts with a model (made or edited in Woant Office).
             InlineObject::Graphic { w: gw, h: gh, alt, float, graphic } => {
-                // A chart WordCraft can edit: a chart part written from its model.
+                // A chart Woant Office can edit: a chart part written from its model.
                 let inner = match (graphic.chart.as_deref(), graphic.source.as_deref()) {
                     (Some(spec), _) => self.chart_graphic(spec, rels),
                     (None, Some(src)) => {
@@ -543,8 +543,8 @@ impl Writer<'_> {
                 w.open("w:drawing", &[]);
                 let docpr = self.next_docpr();
                 let name = match graphic.kind {
-                    wordcraft_doc::graphic::GraphicKind::Chart => format!("Chart {docpr}"),
-                    wordcraft_doc::graphic::GraphicKind::Diagram => format!("Diagram {docpr}"),
+                    woant_office_doc::graphic::GraphicKind::Chart => format!("Chart {docpr}"),
+                    woant_office_doc::graphic::GraphicKind::Diagram => format!("Diagram {docpr}"),
                 };
                 self.drawing_open(w, float, *gw, *gh, &docpr, &name, alt);
                 w.empty("wp:cNvGraphicFramePr", &[]);
@@ -597,12 +597,12 @@ impl Writer<'_> {
                 // The effect extent leaves room for the shadow and glow.
                 let mut float = float.clone();
                 for (e, fx) in float.effect.iter_mut().zip(effects.extent()) {
-                    *e = wordcraft_geom::finite(*e).max(fx);
+                    *e = woant_office_geom::finite(*e).max(fx);
                 }
                 // Tight and Through wrapping need a polygon: the shape's outline unless it has one.
                 if matches!(float.wrap, Wrap::Tight | Wrap::Through) && float.wrap_polygon.is_none() {
-                    float.wrap_polygon = wordcraft_doc::wrap::shape_outline(*kind, *sw, *sh)
-                        .and_then(|pts| wordcraft_doc::wrap::WrapPolygon::from_unit(false, &pts))
+                    float.wrap_polygon = woant_office_doc::wrap::shape_outline(*kind, *sw, *sh)
+                        .and_then(|pts| woant_office_doc::wrap::WrapPolygon::from_unit(false, &pts))
                         .map(std::sync::Arc::new);
                 }
                 let float = &float;
@@ -664,7 +664,7 @@ impl Writer<'_> {
                         "wpg:wgp"
                     }
                 };
-                for c in children.iter().take(wordcraft_doc::para::MAX_GROUP_CHILDREN) {
+                for c in children.iter().take(woant_office_doc::para::MAX_GROUP_CHILDREN) {
                     let at = (c.x, c.y);
                     match &c.obj {
                         InlineObject::Image { media, .. } => {
@@ -679,7 +679,7 @@ impl Writer<'_> {
                         _ => {}
                     }
                 }
-                if canvas.is_some() && float.spin() != wordcraft_geom::Spin::default() {
+                if canvas.is_some() && float.spin() != woant_office_geom::Spin::default() {
                     // The canvas schema has no transform of its own: keep its turn in our
                     // extension (Word draws it unturned, as it can't turn a canvas).
                     w.open("wpc:extLst", &[]);
@@ -700,7 +700,7 @@ impl Writer<'_> {
                 // ECMA-376 §17.3.3.25: a run holding w:ruby (properties, ruby text, base text).
                 let t = if self.is_del(props) { "w:delText" } else { "w:t" };
                 let fin = |v: f32, d: f32| if v.is_finite() { v } else { d };
-                let hps = |v: f32, min: f32| n(wordcraft_geom::to_half_points(v.clamp(min, 1584.0)));
+                let hps = |v: f32, min: f32| n(woant_office_geom::to_half_points(v.clamp(min, 1584.0)));
                 let size = fin(*size, 5.0).clamp(1.0, 1584.0);
                 let base_size = if base_size.is_finite() && *base_size > 0.0 { *base_size } else { props.size.unwrap_or(10.5) };
                 self.rev_open(w, props);
@@ -750,7 +750,7 @@ impl Writer<'_> {
             self.toc_field = Some((instr.to_string(), locked, props.clone()));
             return;
         }
-        if let Some(e) = wordcraft_doc::eq::Enclosure::parse(instr) {
+        if let Some(e) = woant_office_doc::eq::Enclosure::parse(instr) {
             self.rev_open(w, props);
             self.enclosure(w, &e, locked, props);
             self.rev_close(w, props);
@@ -784,7 +784,7 @@ impl Writer<'_> {
                             flush(w, &mut buf);
                             w.empty("w:br", &[]);
                         }
-                        c if (c as u32) < 0x20 || c == wordcraft_doc::para::OBJ => {}
+                        c if (c as u32) < 0x20 || c == woant_office_doc::para::OBJ => {}
                         c => buf.push(c),
                     }
                 }
@@ -798,8 +798,8 @@ impl Writer<'_> {
     /// Enclosed characters as Word stores them: an `eq \o\ac(○,字)` field with no result, whose
     /// code is split so the symbol and the text get their own sizes: "shrink text" makes the text
     /// smaller (raised to sit in the middle), "enlarge symbol" makes the symbol bigger (lowered).
-    fn enclosure(&self, w: &mut W, e: &wordcraft_doc::eq::Enclosure, locked: bool, props: &CharProps) {
-        use wordcraft_doc::eq::EncloseStyle;
+    fn enclosure(&self, w: &mut W, e: &woant_office_doc::eq::Enclosure, locked: bool, props: &CharProps) {
+        use woant_office_doc::eq::EncloseStyle;
         let del = self.is_del(props);
         let tag = if del { "w:delInstrText" } else { "w:instrText" };
         let base = props.size.unwrap_or_else(|| self.doc.styles.resolve_char(None, props).size).clamp(1.0, 1638.0);
@@ -877,7 +877,7 @@ impl Writer<'_> {
         w.open("pic:blipFill", &[]);
         w.empty("a:blip", &[("r:embed", &rid)]);
         if crop.iter().any(|c| *c > 0.0) {
-            let c = |v: f32| n((wordcraft_geom::finite(v).clamp(0.0, 1.0) * 100_000.0).round() as i64);
+            let c = |v: f32| n((woant_office_geom::finite(v).clamp(0.0, 1.0) * 100_000.0).round() as i64);
             w.empty("a:srcRect", &[("l", &c(crop[0])), ("t", &c(crop[1])), ("r", &c(crop[2])), ("b", &c(crop[3]))]);
         }
         w.open("a:stretch", &[]);
@@ -987,7 +987,7 @@ impl Writer<'_> {
         // Its text, within the same bounds layout shows boxes inside boxes with. A box linked
         // from another (Create Link) shows the rest of that box's text: it names the chain and
         // its place in it instead.
-        let part = (*story).and_then(|id| self.doc.parts.get(&id).filter(|p| p.kind == wordcraft_doc::PartKind::TextBox).map(|p| (id, p)));
+        let part = (*story).and_then(|id| self.doc.parts.get(&id).filter(|p| p.kind == woant_office_doc::PartKind::TextBox).map(|p| (id, p)));
         let link = part.and_then(|(id, _)| self.txbx_links.get(&id).copied());
         if let Some((n, seq)) = link.filter(|(_, seq)| *seq > 0) {
             w.empty("wps:linkedTxbx", &[("id", &n.to_string()), ("seq", &seq.to_string())]);
@@ -1008,11 +1008,11 @@ impl Writer<'_> {
         // Text direction and alignment, when not the defaults.
         let body = part.map(|(_, p)| p.body).unwrap_or_default();
         let mut attrs: Vec<(&str, &str)> = Vec::new();
-        if body.vert != wordcraft_doc::props::TextVert::Horz {
+        if body.vert != woant_office_doc::props::TextVert::Horz {
             attrs.push(("vert", body.vert.ooxml()));
         }
-        if body.anchor != wordcraft_doc::props::VAlign::Top {
-            attrs.push(("anchor", wordcraft_doc::props::anchor_ooxml(body.anchor)));
+        if body.anchor != woant_office_doc::props::VAlign::Top {
+            attrs.push(("anchor", woant_office_doc::props::anchor_ooxml(body.anchor)));
         }
         match extra.warp.as_ref().and_then(|t| t.sanitized()) {
             Some(warp) => {
@@ -1089,7 +1089,7 @@ impl Writer<'_> {
                 let tag = if float.wrap == Wrap::Tight { "wp:wrapTight" } else { "wp:wrapThrough" };
                 w.open(tag, &[("wrapText", float.wrap_text.ooxml())]);
                 // The object's own polygon, or its rectangle (the schema requires one).
-                let s = wordcraft_doc::wrap::WRAP_SPACE;
+                let s = woant_office_doc::wrap::WRAP_SPACE;
                 let (edited, pts) = match float.wrap_polygon.as_deref() {
                     Some(p) if p.points.len() >= 3 => (p.edited, p.points.clone()),
                     _ => (false, vec![[0, 0], [0, s], [s, s], [s, 0]]),
@@ -1248,7 +1248,7 @@ fn sectpr_body(w: &mut W, s: &SectionProps) {
             let refs: Vec<(&str, &str)> = a.iter().map(|(k, v)| (*k, v.as_str())).collect();
             w.empty("w:lnNumType", &refs);
         }
-        if s.page_num_start.is_some() || s.page_num_format != wordcraft_doc::section::NumFormat::Decimal {
+        if s.page_num_start.is_some() || s.page_num_format != woant_office_doc::section::NumFormat::Decimal {
             let mut a = vec![("w:fmt", s.page_num_format.ooxml().to_string())];
             if let Some(st) = s.page_num_start {
                 a.push(("w:start", st.to_string()));
@@ -1276,9 +1276,9 @@ fn sectpr_body(w: &mut W, s: &SectionProps) {
             w.empty("w:cols", &refs);
         }
         match s.valign {
-            wordcraft_doc::props::VAlign::Top => {}
-            wordcraft_doc::props::VAlign::Center => w.val("w:vAlign", "center"),
-            wordcraft_doc::props::VAlign::Bottom => w.val("w:vAlign", "bottom"),
+            woant_office_doc::props::VAlign::Top => {}
+            woant_office_doc::props::VAlign::Center => w.val("w:vAlign", "center"),
+            woant_office_doc::props::VAlign::Bottom => w.val("w:vAlign", "bottom"),
         }
         if s.title_page {
             w.empty("w:titlePg", &[]);
@@ -1288,11 +1288,11 @@ fn sectpr_body(w: &mut W, s: &SectionProps) {
         }
         if let Some(g) = &s.doc_grid {
             let mut a = vec![("w:linePitch", twips(g.line_pitch()))];
-            if g.kind != wordcraft_doc::section::DocGridType::Default {
+            if g.kind != woant_office_doc::section::DocGridType::Default {
                 a.insert(0, ("w:type", g.kind.ooxml().to_string()));
             }
             if g.char_space != 0 {
-                let cs = g.char_space.clamp(-wordcraft_doc::section::MAX_CHAR_SPACE, wordcraft_doc::section::MAX_CHAR_SPACE);
+                let cs = g.char_space.clamp(-woant_office_doc::section::MAX_CHAR_SPACE, woant_office_doc::section::MAX_CHAR_SPACE);
                 a.push(("w:charSpace", n(cs as i64)));
             }
             let refs: Vec<(&str, &str)> = a.iter().map(|(k, v)| (*k, v.as_str())).collect();
@@ -1303,7 +1303,7 @@ fn sectpr_body(w: &mut W, s: &SectionProps) {
 
 /// A shape's `cNvPr`/`docPr` name: ink is "Ink <pen> <id>" (and "#<order>" when its drawing
 /// order is known), which reading looks for.
-fn shape_name(kind: ShapeKind, freeform: Option<&wordcraft_doc::freeform::Freeform>, id: &str) -> String {
+fn shape_name(kind: ShapeKind, freeform: Option<&woant_office_doc::freeform::Freeform>, id: &str) -> String {
     let f = freeform.filter(|_| kind == ShapeKind::Freeform);
     match (f.and_then(|f| f.ink), f.and_then(|f| f.order)) {
         // The drawing order rides along for Ink Replay: `Ink Pen 3 #12`.
@@ -1313,17 +1313,17 @@ fn shape_name(kind: ShapeKind, freeform: Option<&wordcraft_doc::freeform::Freefo
     }
 }
 
-fn ink_name(tool: wordcraft_doc::freeform::InkTool) -> &'static str {
+fn ink_name(tool: woant_office_doc::freeform::InkTool) -> &'static str {
     match tool {
-        wordcraft_doc::freeform::InkTool::Pen => "Pen",
-        wordcraft_doc::freeform::InkTool::Pencil => "Pencil",
-        wordcraft_doc::freeform::InkTool::Highlighter => "Highlighter",
+        woant_office_doc::freeform::InkTool::Pen => "Pen",
+        woant_office_doc::freeform::InkTool::Pencil => "Pencil",
+        woant_office_doc::freeform::InkTool::Highlighter => "Highlighter",
     }
 }
 
 /// A freeform's geometry as DrawingML custom geometry (`a:custGeom`): each path in EMUs of its
 /// own coordinate space (the shape's size when it has none), from `a:moveTo` along `a:lnTo`.
-fn cust_geom(w: &mut W, f: &wordcraft_doc::freeform::Freeform, sw: f32, sh: f32) {
+fn cust_geom(w: &mut W, f: &woant_office_doc::freeform::Freeform, sw: f32, sh: f32) {
     let (pw, ph) = (if f.w > 0.0 { f.w } else { sw.max(0.0) }, if f.h > 0.0 { f.h } else { sh.max(0.0) });
     w.open("a:custGeom", &[]);
     w.empty("a:avLst", &[]);
@@ -1337,14 +1337,14 @@ fn cust_geom(w: &mut W, f: &wordcraft_doc::freeform::Freeform, sw: f32, sh: f32)
         w.empty("a:pt", &[("x", &emu(x)), ("y", &emu(y))]);
         w.close(tag);
     };
-    for p in f.paths.iter().take(wordcraft_doc::freeform::MAX_PATHS) {
+    for p in f.paths.iter().take(woant_office_doc::freeform::MAX_PATHS) {
         let mut attrs = vec![("w", emu(pw)), ("h", emu(ph))];
         if !p.closed || f.is_ink() {
             attrs.push(("fill", "none".to_string()));
         }
         let attrs: Vec<(&str, &str)> = attrs.iter().map(|(k, v)| (*k, v.as_str())).collect();
         w.open("a:path", &attrs);
-        for (i, xy) in p.pts.iter().take(wordcraft_doc::freeform::MAX_POINTS).enumerate() {
+        for (i, xy) in p.pts.iter().take(woant_office_doc::freeform::MAX_POINTS).enumerate() {
             pt(w, if i == 0 { "a:moveTo" } else { "a:lnTo" }, *xy);
         }
         // A tap: a zero-length line, so it shows as a dot.
@@ -1362,7 +1362,7 @@ fn cust_geom(w: &mut W, f: &wordcraft_doc::freeform::Freeform, sw: f32, sh: f32)
 
 /// A shape's `a:effectLst` (ECMA-376 Part 1 §20.1.8.26), children in schema order.
 /// A line's arrowheads (`a:headEnd`, `a:tailEnd`, ECMA-376 §20.1.8.38 / §20.1.8.57).
-fn arrow_ends(w: &mut W, extra: &wordcraft_doc::connector::ShapeExtra) {
+fn arrow_ends(w: &mut W, extra: &woant_office_doc::connector::ShapeExtra) {
     if extra.arrow_start {
         w.empty("a:headEnd", &[("type", "triangle")]);
     }
@@ -1372,7 +1372,7 @@ fn arrow_ends(w: &mut W, extra: &wordcraft_doc::connector::ShapeExtra) {
 }
 
 /// A preset text warp (`a:prstTxWarp`, ECMA-376 §20.1.9.19) with its adjust values.
-fn text_warp(w: &mut W, warp: &wordcraft_doc::wordart::TextWarp) {
+fn text_warp(w: &mut W, warp: &woant_office_doc::wordart::TextWarp) {
     w.open("a:prstTxWarp", &[("prst", &warp.preset)]);
     if warp.adj.is_empty() {
         w.empty("a:avLst", &[]);
@@ -1438,7 +1438,7 @@ fn effect_list(w: &mut W, effects: &ShapeEffects) {
     w.close("a:effectLst");
 }
 
-fn xfrm(w: &mut W, (x, y): (f32, f32), cw: f32, ch: f32, spin: wordcraft_geom::Spin) {
+fn xfrm(w: &mut W, (x, y): (f32, f32), cw: f32, ch: f32, spin: woant_office_geom::Spin) {
     w.open("a:xfrm", &spin_attrs(spin).iter().map(|(k, v)| (*k, v.as_str())).collect::<Vec<_>>());
     w.empty("a:off", &[("x", &emu(x)), ("y", &emu(y))]);
     w.empty("a:ext", &[("cx", &emu(cw.max(0.0))), ("cy", &emu(ch.max(0.0)))]);
@@ -1446,15 +1446,15 @@ fn xfrm(w: &mut W, (x, y): (f32, f32), cw: f32, ch: f32, spin: wordcraft_geom::S
 }
 
 /// An `a:xfrm` holding only a rotation and flips.
-fn xfrm_spin_only(w: &mut W, spin: wordcraft_geom::Spin) {
+fn xfrm_spin_only(w: &mut W, spin: woant_office_geom::Spin) {
     w.empty("a:xfrm", &spin_attrs(spin).iter().map(|(k, v)| (*k, v.as_str())).collect::<Vec<_>>());
 }
 
 /// The `a:xfrm` attributes of a rotation and flips (ECMA-376 §20.1.7.6: `rot` in 60000ths of a
 /// degree, clockwise), none for an unturned object.
-pub(super) fn spin_attrs(spin: wordcraft_geom::Spin) -> Vec<(&'static str, String)> {
+pub(super) fn spin_attrs(spin: woant_office_geom::Spin) -> Vec<(&'static str, String)> {
     let mut a = Vec::new();
-    let rot = (wordcraft_geom::normalize_degrees(spin.deg) as f64 * 60_000.0).round() as i64 % 21_600_000;
+    let rot = (woant_office_geom::normalize_degrees(spin.deg) as f64 * 60_000.0).round() as i64 % 21_600_000;
     if rot != 0 {
         a.push(("rot", rot.to_string()));
     }
@@ -1527,7 +1527,7 @@ pub(super) fn nv_props(w: &mut W, tag: &str, id: &str, name: &str, descr: &str, 
 }
 
 /// A DrawingML `a:solidFill` in `c`, or `a:noFill`.
-fn solid_fill(w: &mut W, c: Option<wordcraft_doc::props::Rgb>) {
+fn solid_fill(w: &mut W, c: Option<woant_office_doc::props::Rgb>) {
     match c {
         Some(c) => {
             w.open("a:solidFill", &[]);
@@ -1548,7 +1548,7 @@ pub(super) fn note_pr_inner(w: &mut W, pr: &NoteProps) {
         w.val("w:numFmt", f.ooxml());
     }
     if let Some(n) = pr.num_start {
-        w.val("w:numStart", &n.clamp(1, wordcraft_doc::section::MAX_NOTE_START).to_string());
+        w.val("w:numStart", &n.clamp(1, woant_office_doc::section::MAX_NOTE_START).to_string());
     }
     if let Some(r) = pr.num_restart {
         w.val("w:numRestart", r.ooxml());

@@ -12,10 +12,10 @@
 
 use egui::{Color32, Painter, Pos2, Rect, Ui};
 use serde_json::json;
-use wordcraft_doc::para::{InlineObject, OBJ};
-use wordcraft_doc::{PartKind, Pos, StoryRef};
-use wordcraft_layout::DocLayout;
-use wordcraft_layout::hit::ObjectHit;
+use woant_office_doc::para::{InlineObject, OBJ};
+use woant_office_doc::{PartKind, Pos, StoryRef};
+use woant_office_layout::DocLayout;
+use woant_office_layout::hit::ObjectHit;
 
 use crate::WordApp;
 use crate::frame::{self, Drag, Grab};
@@ -51,7 +51,7 @@ fn connector_ends(app: &WordApp, layout: &DocLayout) -> Option<(ObjectHit, (f32,
     }
     let (flip_h, flip_v) = (float.flip_h, float.flip_v);
     let o = layout.object(&pos, app.session.page_hint)?;
-    let (a, b) = wordcraft_doc::connector::ends(o.rect.x, o.rect.y, o.rect.w, o.rect.h, flip_h, flip_v);
+    let (a, b) = woant_office_doc::connector::ends(o.rect.x, o.rect.y, o.rect.w, o.rect.h, flip_h, flip_v);
     Some((o, a, b))
 }
 
@@ -74,7 +74,7 @@ fn connector_end_at(app: &WordApp, layout: &DocLayout, pages: &[Rect], scale: f3
 
 /// The selected object: the selection is exactly one picture, shape or text box in the body.
 pub fn selected(app: &WordApp) -> Option<(Pos, &InlineObject)> {
-    wordcraft_engine::cmd::objects::object_selection(&app.session).filter(|(p, _)| p.story == StoryRef::Body)
+    woant_office_engine::cmd::objects::object_selection(&app.session).filter(|(p, _)| p.story == StoryRef::Body)
 }
 
 /// Whether the object under `hit` keeps its place and size: charts and diagrams can be selected
@@ -105,7 +105,7 @@ pub fn active(app: &WordApp, layout: &DocLayout) -> Option<(ObjectHit, bool)> {
     }
 }
 
-fn screen(pages: &[Rect], scale: f32, page: usize, r: wordcraft_geom::Rect) -> Option<Rect> {
+fn screen(pages: &[Rect], scale: f32, page: usize, r: woant_office_geom::Rect) -> Option<Rect> {
     pages.get(page).map(|p| frame::to_screen(*p, scale, r))
 }
 
@@ -172,7 +172,7 @@ pub fn pointer(app: &mut WordApp, ui: &Ui, resp: &egui::Response, pages: &[Rect]
         let end = Pos { off: pos.off + OBJ.len_utf8(), ..pos.clone() };
         let _ = app.run("select.range", json!({"anchor": pos, "focus": end}));
         let (min, picture) = match selected(app) {
-            Some((_, o)) => (wordcraft_engine::cmd::objects::min_size(o), matches!(o, InlineObject::Image { .. })),
+            Some((_, o)) => (woant_office_engine::cmd::objects::min_size(o), matches!(o, InlineObject::Image { .. })),
             None => return true,
         };
         // Objects in table cells can be selected and resized, not moved; charts neither.
@@ -192,7 +192,7 @@ fn link_click(app: &mut WordApp, layout: &DocLayout, pages: &[Rect], scale: f32,
         return;
     }
     let target = crate::canvas::page_at(pages, layout, scale, at).and_then(|(page, x, y)| {
-        layout.find_object(page, |o| o.page == page && o.text_box.is_some() && o.rect.contains(wordcraft_geom::Point::new(x, y)))
+        layout.find_object(page, |o| o.page == page && o.text_box.is_some() && o.rect.contains(woant_office_geom::Point::new(x, y)))
     });
     let Some(target) = target else {
         app.status(tl!("Not linked: click a text box"));
@@ -281,7 +281,7 @@ pub fn paint(app: &WordApp, painter: &Painter, t: &Tokens, layout: &DocLayout, p
             // A turned object's pixels fill its rotated bounds, which move with it.
             let r = d.object.bounds();
             let (dx, dy) = (d.drag.rect.x - d.drag.start.x, d.drag.rect.y - d.drag.start.y);
-            let moved = wordcraft_geom::Rect::new(r.x + dx, r.y + dy, r.w, r.h);
+            let moved = woant_office_geom::Rect::new(r.x + dx, r.y + dy, r.w, r.h);
             let to = if turned { screen(pages, scale, d.drag.to_page, moved).unwrap_or(to) } else { to };
             let (w, h) = (pg.w.max(1.0), pg.h.max(1.0));
             let uv = Rect::from_min_max(egui::pos2(r.x / w, r.y / h), egui::pos2(r.right() / w, r.bottom() / h));
@@ -314,11 +314,11 @@ fn paint_end_drag(app: &WordApp, d: &ObjectDrag, painter: &Painter, t: &Tokens, 
     let Some((which, at)) = d.end.filter(|_| d.drag.moved) else { return };
     let Some((_, a, b)) = connector_ends(app, layout) else { return };
     let fixed = if which { a } else { b };
-    let snap = wordcraft_engine::cmd::connectors::SNAP;
+    let snap = woant_office_engine::cmd::connectors::SNAP;
     let mut best: Option<((f32, f32), f32)> = None;
     if let Some(pg) = layout.pages.get(d.object.page) {
         for it in &pg.items {
-            let wordcraft_layout::Placed::Object { rect, spin, story: StoryRef::Body, path, off, .. } = it else { continue };
+            let woant_office_layout::Placed::Object { rect, spin, story: StoryRef::Body, path, off, .. } = it else { continue };
             let pos = Pos { story: StoryRef::Body, path: path.clone(), off: *off };
             let Some(InlineObject::Shape { kind, .. }) = app.session.doc.para_at(&pos).and_then(|p| p.object_at(pos.off)) else { continue };
             if kind.is_connector() || pos == d.object.pos() {
@@ -329,8 +329,8 @@ fn paint_end_drag(app: &WordApp, d: &ObjectDrag, painter: &Painter, t: &Tokens, 
             if at.0 < rect.x - 4.0 * snap || at.0 > rect.right() + 4.0 * snap || at.1 < rect.y - 4.0 * snap || at.1 > rect.bottom() + 4.0 * snap {
                 continue;
             }
-            for (i, _) in wordcraft_doc::connector::sites(*kind, rect.w, rect.h).iter().enumerate() {
-                let Some(p) = wordcraft_doc::connector::site_point(*kind, r, *spin, i as u32) else { continue };
+            for (i, _) in woant_office_doc::connector::sites(*kind, rect.w, rect.h).iter().enumerate() {
+                let Some(p) = woant_office_doc::connector::site_point(*kind, r, *spin, i as u32) else { continue };
                 let dist = ((p.0 - at.0).powi(2) + (p.1 - at.1).powi(2)).sqrt();
                 if let Some(c) = point_on_screen(pages, scale, d.object.page, p) {
                     painter.circle_stroke(c, 3.5, egui::Stroke::new(1.0, t.accent));
@@ -394,14 +394,14 @@ pub fn enter_text_box(app: &mut WordApp) -> bool {
 mod tests {
     use std::sync::Arc;
 
-    use wordcraft_doc::para::{InlineObject, ShapeKind};
-    use wordcraft_doc::{Document, Pos};
+    use woant_office_doc::para::{InlineObject, ShapeKind};
+    use woant_office_doc::{Document, Pos};
 
     use super::*;
 
     /// An app whose first paragraph holds `obj`, and where it's laid out.
     fn app_with(obj: InlineObject) -> (WordApp, ObjectHit) {
-        let mut app = WordApp::new(wordcraft_engine::Session::new(Document::new()), crate::Services::default());
+        let mut app = WordApp::new(woant_office_engine::Session::new(Document::new()), crate::Services::default());
         app.session.doc.insert_object(&Pos::body(0, 0), obj, &Default::default()).unwrap();
         let hit = app.session.layout().object(&Pos::body(0, 0), 0).expect("laid out");
         (app, hit)

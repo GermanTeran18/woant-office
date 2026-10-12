@@ -188,7 +188,7 @@ pub fn lang_from_tag(tag: &str) -> Option<Lang> {
     cands.iter().find_map(|c| Lang::from_code(c))
 }
 
-/// The first of the system's preferred languages WordCraft has, in the user's order: someone
+/// The first of the system's preferred languages Woant Office has, in the user's order: someone
 /// who prefers French, then Japanese, gets Japanese rather than English.
 pub fn first_supported<'a>(tags: impl IntoIterator<Item = &'a str>) -> Option<Lang> {
     tags.into_iter().find_map(lang_from_tag)
@@ -207,7 +207,7 @@ pub fn system_lang() -> Lang {
 fn detect_system_lang() -> Lang {
     // An explicit override, then the platform's preferred UI languages (Windows display language,
     // macOS preferred languages, `LC_ALL`/`LC_MESSAGES`/`LANG` on Unix, the browser on the web).
-    if let Some(l) = std::env::var("WORDCRAFT_LANGUAGE").ok().and_then(|v| lang_from_tag(&v)) {
+    if let Some(l) = std::env::var("WOANT_OFFICE_LANGUAGE").ok().and_then(|v| lang_from_tag(&v)) {
         return l;
     }
     let tags: Vec<String> = sys_locale::get_locales().take(16).collect();
@@ -285,7 +285,7 @@ pub fn tr(lang: Lang, s: &str) -> &str {
 /// A style's name as the interface shows it: built-in styles (`Normal`, `Heading 2`, `TOC 3`) in
 /// the current language, styles the author made exactly as named. Display only: the document,
 /// commands and saved files keep the English name.
-pub fn style_name(style: &wordcraft_doc::Style) -> String {
+pub fn style_name(style: &woant_office_doc::Style) -> String {
     if style.builtin { builtin_style_name(&style.name) } else { style.name.clone() }
 }
 

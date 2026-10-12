@@ -10,7 +10,7 @@ use egui::{Sense, Ui, vec2};
 use serde::Serialize;
 use serde_json::{Value, json};
 
-use wordcraft_engine::Password;
+use woant_office_engine::Password;
 
 use crate::WordApp;
 use crate::theme::{Tokens, semibold};
@@ -336,7 +336,7 @@ pub enum Dialog {
 }
 
 /// The Table Properties dialog's fields. Lengths are in the interface unit
-/// ([`wordcraft_geom::Unit`], inches by default).
+/// ([`woant_office_geom::Unit`], inches by default).
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TableForm {
@@ -362,14 +362,14 @@ pub struct TableForm {
 impl TableForm {
     /// The caret's table, row, column and cell as the dialog shows them.
     pub fn read(app: &WordApp) -> Option<TableForm> {
-        use wordcraft_doc::props::{Align, HeightRule, VAlign};
+        use woant_office_doc::props::{Align, HeightRule, VAlign};
         let s = &app.session;
         let (tp, r, c) = s.sel.focus.path.cell()?;
         let t = s.doc.table(s.sel.focus.story, &tp)?;
-        let k = wordcraft_geom::Unit::default().pt_per_unit();
+        let k = woant_office_geom::Unit::default().pt_per_unit();
         let row = t.rows.get(r).map(|x| x.props.clone()).unwrap_or_default();
         let cell = t.rows.get(r).and_then(|x| x.cells.get(c)).map(|x| x.props.clone()).unwrap_or_default();
-        let tw = wordcraft_engine::cmd::page::sect(s).text_width();
+        let tw = woant_office_engine::cmd::page::sect(s).text_width();
         let width = t.props.width_pct.filter(|p| *p > 0.0).map(|p| tw * p.min(100.0) / 100.0).or(t.props.width.filter(|w| *w > 0.0));
         let fin = |v: f32| if v.is_finite() { v } else { 0.0 };
         Some(TableForm {
@@ -402,7 +402,7 @@ impl TableForm {
 
     /// `table.properties` parameters for what differs from `basis` (empty when nothing does).
     pub fn changes(&self, basis: &TableForm) -> Value {
-        let k = wordcraft_geom::Unit::default().pt_per_unit();
+        let k = woant_office_geom::Unit::default().pt_per_unit();
         let moved = |a: f32, b: f32| (a - b).abs() > 1e-4;
         let mut v = serde_json::Map::new();
         if self.width_on != basis.width_on || (self.width_on && moved(self.width, basis.width)) {
@@ -511,19 +511,19 @@ const REGION_LABELS: [&str; 7] = ["Whole Table", "Header Row", "Total Row", "Fir
 fn table_regions(app: &WordApp, id: &str) -> Box<[TableRegion; 7]> {
     let Some(st) = app.session.doc.styles.table_style(id) else { return Default::default() };
     let p = &st.parts;
-    let hex = |c: Option<wordcraft_doc::Rgb>| c.map(|c| c.hex()).unwrap_or_default();
-    let text = |c: &wordcraft_doc::CharProps| match c.color {
-        Some(wordcraft_doc::TextColor::Rgb(c)) => c.hex(),
+    let hex = |c: Option<woant_office_doc::Rgb>| c.map(|c| c.hex()).unwrap_or_default();
+    let text = |c: &woant_office_doc::CharProps| match c.color {
+        Some(woant_office_doc::TextColor::Rgb(c)) => c.hex(),
         _ => String::new(),
     };
-    let lines = |b: Option<wordcraft_doc::props::Borders>| b.is_some_and(|b| b.any_visible());
+    let lines = |b: Option<woant_office_doc::props::Borders>| b.is_some_and(|b| b.any_visible());
     // A region's text: the whole table's formatting with the region's over it.
-    let region = |borders: Option<wordcraft_doc::props::Borders>, fill: Option<wordcraft_doc::Rgb>, chr: &wordcraft_doc::CharProps| {
+    let region = |borders: Option<woant_office_doc::props::Borders>, fill: Option<woant_office_doc::Rgb>, chr: &woant_office_doc::CharProps| {
         let mut c = st.chr.clone();
         c.overlay(chr);
         TableRegion { borders: lines(borders), fill: hex(fill), bold: c.bold.unwrap_or(false), color: text(&c) }
     };
-    let none = wordcraft_doc::CharProps::default();
+    let none = woant_office_doc::CharProps::default();
     Box::new([
         region(p.borders, p.fill, &none),
         region(p.header_borders, p.header_fill, &p.header_chr),
@@ -539,7 +539,7 @@ fn table_regions(app: &WordApp, id: &str) -> Box<[TableRegion; 7]> {
 /// only what changed from `basis`, so the rest stays inherited.
 fn table_style_params(id: Option<&str>, name: &str, based_on: &str, regions: &[TableRegion; 7], basis: &[TableRegion; 7]) -> Value {
     let mut v = json!({"name": name.trim(), "basedOn": based_on});
-    for ((key, r), b) in wordcraft_engine::cmd::table_style::REGIONS.into_iter().zip(regions.iter()).zip(basis.iter()) {
+    for ((key, r), b) in woant_office_engine::cmd::table_style::REGIONS.into_iter().zip(regions.iter()).zip(basis.iter()) {
         let ch = region_changes(r, b);
         if ch.as_object().is_some_and(|o| !o.is_empty()) {
             v[key] = ch;
@@ -553,8 +553,8 @@ fn table_style_params(id: Option<&str>, name: &str, based_on: &str, regions: &[T
 
 /// A small sample table drawn with `style` (5 columns, a header, three body rows and a total
 /// row), showing the regions `look` turns on: the Table Style dialog's live preview.
-fn table_style_preview(ui: &mut Ui, style: Option<&wordcraft_doc::styles::TableStyleProps>, look: wordcraft_doc::props::TableLook) {
-    use wordcraft_doc::props::{Border, Borders};
+fn table_style_preview(ui: &mut Ui, style: Option<&woant_office_doc::styles::TableStyleProps>, look: woant_office_doc::props::TableLook) {
+    use woant_office_doc::props::{Border, Borders};
     const COLS: usize = 5;
     const ROWS: usize = 5;
     const TEXT: [[&str; COLS]; ROWS] = [
@@ -574,7 +574,7 @@ fn table_style_preview(ui: &mut Ui, style: Option<&wordcraft_doc::styles::TableS
     let p = &st.parts;
     let table = rect.shrink2(vec2(14.0, 10.0));
     let (cw, rh) = (table.width() / COLS as f32, table.height() / ROWS as f32);
-    let rgb = |c: wordcraft_doc::Rgb| egui::Color32::from_rgb(c.0, c.1, c.2);
+    let rgb = |c: woant_office_doc::Rgb| egui::Color32::from_rgb(c.0, c.1, c.2);
     let tb = p.borders.unwrap_or_default();
     for (ri, row) in TEXT.iter().enumerate() {
         let header = look.header_row && ri == 0;
@@ -635,7 +635,7 @@ fn table_style_preview(ui: &mut Ui, style: Option<&wordcraft_doc::styles::TableS
             edge(cell.left_top(), cell.left_bottom(), b.left);
             edge(cell.right_top(), cell.right_bottom(), b.right);
             let color = match chr.color {
-                Some(wordcraft_doc::TextColor::Rgb(c)) => rgb(c),
+                Some(woant_office_doc::TextColor::Rgb(c)) => rgb(c),
                 _ => egui::Color32::BLACK,
             };
             let font = egui::FontId::proportional(11.0);
@@ -654,7 +654,7 @@ fn current_table_style(app: &WordApp) -> Option<String> {
     let s = &app.session;
     let (tp, _, _) = s.sel.focus.path.cell()?;
     let id = s.doc.table(s.sel.focus.story, &tp)?.props.style.clone()?;
-    s.doc.styles.get(&id).filter(|st| st.kind == wordcraft_doc::StyleKind::Table).map(|st| st.id.clone())
+    s.doc.styles.get(&id).filter(|st| st.kind == woant_office_doc::StyleKind::Table).map(|st| st.id.clone())
 }
 
 /// The params `table.newStyle` / `table.modifyStyle` need for what changed in one region.
@@ -677,8 +677,8 @@ fn region_changes(r: &TableRegion, basis: &TableRegion) -> Value {
 }
 
 /// A colour menu: a swatch with the colour grid and No Color. `value` is hex, empty for none.
-pub(crate) fn color_menu(ui: &mut Ui, theme: &[wordcraft_doc::Rgb], value: &mut String) {
-    let c = wordcraft_doc::Rgb::parse(value);
+pub(crate) fn color_menu(ui: &mut Ui, theme: &[woant_office_doc::Rgb], value: &mut String) {
+    let c = woant_office_doc::Rgb::parse(value);
     ui.horizontal(|ui| {
         let (r, _) = ui.allocate_exact_size(vec2(16.0, 16.0), Sense::hover());
         let t = Tokens::get(ui.ctx());
@@ -820,7 +820,7 @@ impl Dialog {
                 let rp = app.session.doc.para_at(&app.session.sel.focus).map(|p| app.session.doc.styles.resolve_para(&p.props));
                 let rp = rp?;
                 let line = match rp.line_spacing {
-                    wordcraft_doc::props::LineSpacing::Multiple(m) => m,
+                    woant_office_doc::props::LineSpacing::Multiple(m) => m,
                     _ => 1.0,
                 };
                 let (vl, vr) = rp.visual_indents();
@@ -865,8 +865,8 @@ impl Dialog {
             "goto" => Dialog::Goto { page: String::new() },
             "insertTable" => Dialog::InsertTable { rows: 2, cols: 5 },
             "pageSetup" => {
-                let sp = wordcraft_engine::cmd::page::sect(&app.session);
-                use wordcraft_doc::section::DocGridType;
+                let sp = woant_office_engine::cmd::page::sect(&app.session);
+                use woant_office_doc::section::DocGridType;
                 let kind = match sp.doc_grid.map(|g| g.kind) {
                     Some(DocGridType::Lines) => 1,
                     Some(DocGridType::LinesAndChars) => 2,
@@ -892,7 +892,7 @@ impl Dialog {
             "zoom" => Dialog::Zoom { percent: (app.session.view.zoom * 100.0).round() },
             "watermark" => Dialog::Watermark { text: "CONFIDENTIAL".into(), diagonal: true },
             "phonetic" => {
-                let v = wordcraft_engine::cmd::phonetic::state(&app.session);
+                let v = woant_office_engine::cmd::phonetic::state(&app.session);
                 let f = |k: &str| v.get(k).and_then(Value::as_f64).unwrap_or(0.0) as f32;
                 let s = |k: &str| v.get(k).and_then(Value::as_str).unwrap_or("").to_string();
                 Dialog::Phonetic {
@@ -928,7 +928,7 @@ impl Dialog {
             }
             "enclose" => {
                 // The selection's text and its enclosure, if it has one.
-                let t = wordcraft_engine::cmd::format::enclose_target(&app.session).ok();
+                let t = woant_office_engine::cmd::format::enclose_target(&app.session).ok();
                 let cur = t.as_ref().and_then(|t| t.current.clone());
                 Dialog::Enclose {
                     style: cur.as_ref().map_or("shrink", |e| e.style.name()).into(),
@@ -958,7 +958,7 @@ impl Dialog {
             "findRecipient" => Dialog::FindRecipient { text: String::new(), message: String::new() },
             "fieldCode" => Dialog::FieldCode { code: String::new(), edit: false, message: String::new() },
             "editFieldCode" => {
-                let field = wordcraft_engine::cmd::fields::selected(&app.session).into_iter().next()?;
+                let field = woant_office_engine::cmd::fields::selected(&app.session).into_iter().next()?;
                 Dialog::FieldCode { code: field.instr, edit: true, message: String::new() }
             }
             "encryptPassword" => Dialog::EncryptPassword { password: Password::default(), confirm: Password::default(), message: String::new() },
@@ -998,9 +998,9 @@ impl Dialog {
         })
     }
 
-    /// Paste Special for a clipboard payload (`text`, `html`, `rtf`; empty = WordCraft's own copy).
+    /// Paste Special for a clipboard payload (`text`, `html`, `rtf`; empty = Woant Office's own copy).
     pub fn paste_special(app: &WordApp, payload: &Value) -> Dialog {
-        let formats: Vec<String> = wordcraft_engine::cmd::paste::available(&app.session, payload).into_iter().map(str::to_string).collect();
+        let formats: Vec<String> = woant_office_engine::cmd::paste::available(&app.session, payload).into_iter().map(str::to_string).collect();
         let mut kept = json!({});
         for k in ["text", "html", "rtf"] {
             if let Some(t) = payload.get(k).and_then(Value::as_str) {
@@ -1013,13 +1013,13 @@ impl Dialog {
     pub fn modify_style(app: &WordApp, id: &str) -> Option<Dialog> {
         let st = app.session.doc.styles.get(id)?;
         let rc = app.session.doc.styles.resolve_char(
-            if st.kind == wordcraft_doc::StyleKind::Paragraph { Some(id) } else { None },
-            &wordcraft_doc::CharProps {
-                style: if st.kind == wordcraft_doc::StyleKind::Character { Some(id.into()) } else { None },
+            if st.kind == woant_office_doc::StyleKind::Paragraph { Some(id) } else { None },
+            &woant_office_doc::CharProps {
+                style: if st.kind == woant_office_doc::StyleKind::Character { Some(id.into()) } else { None },
                 ..Default::default()
             },
         );
-        let rp = app.session.doc.styles.resolve_para(&wordcraft_doc::ParaProps { style: Some(id.into()), ..Default::default() });
+        let rp = app.session.doc.styles.resolve_para(&woant_office_doc::ParaProps { style: Some(id.into()), ..Default::default() });
         Some(Dialog::ModifyStyle {
             back: false,
             resume: None,
@@ -1030,8 +1030,8 @@ impl Dialog {
             bold: rc.bold,
             italic: rc.italic,
             color: match rc.color {
-                wordcraft_doc::TextColor::Rgb(c) => c.hex(),
-                wordcraft_doc::TextColor::Auto => "auto".into(),
+                woant_office_doc::TextColor::Rgb(c) => c.hex(),
+                woant_office_doc::TextColor::Auto => "auto".into(),
             },
             before: rp.space_before,
             after: rp.space_after,
@@ -1139,8 +1139,8 @@ pub fn show(app: &mut WordApp, ctx: &egui::Context) {
         Dialog::Refs(d) => d.title(),
         Dialog::Icons { .. } => "Icons",
         Dialog::PasteSpecial { .. } => "Paste Special",
-        Dialog::About { .. } => "About WordCraft",
-        Dialog::SaveChanges { .. } => "WordCraft",
+        Dialog::About { .. } => "About Woant Office",
+        Dialog::SaveChanges { .. } => "Woant Office",
         Dialog::RecipientList { .. } => "Recipient List",
         Dialog::SelectTable { .. } => "Select Table",
         Dialog::InsertMergeField { .. } => "Insert Merge Field",
@@ -1224,7 +1224,7 @@ fn font_props(d: &Dialog) -> serde_json::Map<String, Value> {
     if let Ok(s) = size.trim().parse::<f64>() {
         props.insert("size".into(), json!(s));
     }
-    if let Some(c) = wordcraft_doc::Rgb::parse(color) {
+    if let Some(c) = woant_office_doc::Rgb::parse(color) {
         props.insert("color".into(), json!({"Rgb": [c.0, c.1, c.2]}));
     }
     props
@@ -1245,7 +1245,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
         Dialog::Font { font, size, bold, italic, underline, strike, sup, sub, small_caps, caps, hidden, color, spacing, .. } => {
             // Build the sample text format for the preview pane below.
             let preview_size = size.trim().parse::<f32>().unwrap_or(12.0).clamp(6.0, 72.0);
-            let preview_color = wordcraft_doc::Rgb::parse(color).map(crate::theme::c32).unwrap_or_else(|| ui.visuals().text_color());
+            let preview_color = woant_office_doc::Rgb::parse(color).map(crate::theme::c32).unwrap_or_else(|| ui.visuals().text_color());
             let mut fmt = egui::TextFormat {
                 font_id: egui::FontId::new(preview_size, egui::FontFamily::Proportional),
                 color: preview_color,
@@ -1622,7 +1622,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                     }
                     let _ = app.run("layout.documentGrid", v);
                 }
-                if *rtl != wordcraft_engine::cmd::page::sect(&app.session).rtl {
+                if *rtl != woant_office_engine::cmd::page::sect(&app.session).rtl {
                     let _ = app.run("layout.sectionRtl", json!({"value": *rtl}));
                 }
             }
@@ -1824,7 +1824,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             let (ok, cancel) = buttons(ui, tl!("OK"));
             if ok {
                 let mut chr = json!({"font": font, "size": *size, "bold": *bold, "italic": *italic});
-                if let Some(c) = wordcraft_doc::Rgb::parse(color) {
+                if let Some(c) = woant_office_doc::Rgb::parse(color) {
                     chr["color"] = json!({"Rgb": [c.0, c.1, c.2]});
                 }
                 let _ =
@@ -1848,7 +1848,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 .styles
                 .styles
                 .iter()
-                .filter(|s| s.kind == wordcraft_doc::StyleKind::Table && Some(&s.id) != id.as_ref())
+                .filter(|s| s.kind == woant_office_doc::StyleKind::Table && Some(&s.id) != id.as_ref())
                 .map(|s| (s.id.clone(), s.name.clone()))
                 .collect();
             let base_name = styles.iter().find(|(i, _)| i == based_on).map(|(_, n)| n.clone()).unwrap_or_else(|| based_on.clone());
@@ -1921,7 +1921,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             }
             ui.add_space(4.0);
             ui.label(egui::RichText::new(tl!("Preview")).small().weak());
-            table_style_preview(ui, wordcraft_engine::cmd::table_style::preview(&app.session, &v).as_ref(), look);
+            table_style_preview(ui, woant_office_engine::cmd::table_style::preview(&app.session, &v).as_ref(), look);
             let (ok, cancel) = buttons(ui, tl!("OK"));
             if ok {
                 let cmd = if id.is_some() { "table.modifyStyle" } else { "table.newStyle" };
@@ -1940,7 +1940,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             let q = query.to_lowercase();
             let localized_q = crate::i18n::lowercase(query);
             let reg = app.session.registry.clone();
-            let mut hits: Vec<&wordcraft_engine::CommandSpec> = reg
+            let mut hits: Vec<&woant_office_engine::CommandSpec> = reg
                 .all()
                 .iter()
                 .filter(|c| {
@@ -1971,7 +1971,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 ui.label(egui::RichText::new(tl!("The clipboard is empty.")).weak());
             }
             for (i, f) in formats.iter().enumerate() {
-                let label = wordcraft_engine::cmd::paste::FORMATS.iter().find(|(id, _)| id == f).map(|(_, l)| *l).unwrap_or(f.as_str());
+                let label = woant_office_engine::cmd::paste::FORMATS.iter().find(|(id, _)| id == f).map(|(_, l)| *l).unwrap_or(f.as_str());
                 ui.radio_value(choice, i, tl!(label));
             }
             if let Some(f) = formats.get(*choice) {
@@ -2008,16 +2008,12 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 1 => crate::credits::contributors_ui(ui),
                 2 => crate::credits::models_ui(ui),
                 _ => {
-                    ui.label(egui::RichText::new(tl!("WordCraft")).font(semibold(22.0)));
-                    let build = option_env!("WORDCRAFT_BUILD_SHA").map(|s| s.get(..8).unwrap_or(s)).unwrap_or(tl!("development build"));
+                    ui.label(egui::RichText::new(tl!("Woant Office")).font(semibold(22.0)));
+                    let build = option_env!("WOANT_OFFICE_BUILD_SHA").map(|s| s.get(..8).unwrap_or(s)).unwrap_or(tl!("development build"));
                     ui.label(crate::i18n::fmt(tl!("Version {version} ({build})"), &[("version", env!("CARGO_PKG_VERSION")), ("build", build)]));
-                    ui.label(tl!(
-                        "A free, open-source word processor written from scratch in Rust.\nPart of the Crafting Apps from the ArtCraft team."
-                    ));
+                    ui.label(tl!("A free, open-source word processor written from scratch in Rust.\nA fork of WordCraft."));
                     ui.add_space(6.0);
-                    ui.hyperlink_to(tl!("getartcraft.com/apps/wordcraft"), "https://getartcraft.com/apps/wordcraft");
-                    ui.hyperlink_to(tl!("Join us on Discord: discord.gg/artcraft"), "https://discord.gg/artcraft");
-                    ui.hyperlink_to(tl!("Source code: github.com/storytold/wordcraft"), "https://github.com/storytold/wordcraft");
+                    ui.hyperlink_to(tl!("Source code: github.com/GermanTeran18/woant-office"), "https://github.com/GermanTeran18/woant-office");
                     ui.add_space(6.0);
                     ui.label(
                         egui::RichText::new(tl!("MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the WordCraft contributors."))
@@ -2111,7 +2107,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                         app.ui.backstage = false;
                         return true;
                     }
-                    Err(e) if wordcraft_engine::io::wrong_password(&e) => {
+                    Err(e) if woant_office_engine::io::wrong_password(&e) => {
                         *message = tl!("That password isn't right. Check it (passwords are case-sensitive) and try again.").to_string();
                         password.as_mut_string().clear();
                     }
@@ -2136,7 +2132,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             });
             ui.label(
                 egui::RichText::new(tl!(
-                    "Keep the password somewhere safe: without it nobody, WordCraft included, can open the document. Leave both boxes empty to remove the password."
+                    "Keep the password somewhere safe: without it nobody, Woant Office included, can open the document. Leave both boxes empty to remove the password."
                 ))
                 .small()
                 .weak(),
@@ -2419,8 +2415,8 @@ fn recipient_list(app: &mut WordApp, ui: &mut Ui, fields: &mut Vec<String>, rows
 
 /// The Table Properties dialog's fields: Table, Row, Column and Cell sections.
 fn table_properties(ui: &mut Ui, f: &mut TableForm) {
-    let unit = wordcraft_geom::Unit::default();
-    fn len(v: &mut f32, lo: f32, unit: wordcraft_geom::Unit) -> egui::DragValue<'_> {
+    let unit = woant_office_geom::Unit::default();
+    fn len(v: &mut f32, lo: f32, unit: woant_office_geom::Unit) -> egui::DragValue<'_> {
         egui::DragValue::new(v).speed(0.01).range(lo..=22.0).suffix(unit.suffix()).max_decimals(2)
     }
     let heading = |ui: &mut Ui, s: &str| {
@@ -2541,7 +2537,7 @@ fn apply_asian(app: &mut WordApp, asian: [bool; 6], was: [bool; 6]) {
 /// Manage Styles' body. Reads the list from `styles.manage`'s data (never re-running the command,
 /// which would ask to open this dialog again) and acts through commands.
 fn manage_styles(app: &mut WordApp, ui: &mut Ui, alphabetical: &mut bool, selected: &mut String) -> bool {
-    let list = wordcraft_engine::cmd::para::manage_list(&app.session, *alphabetical);
+    let list = woant_office_engine::cmd::para::manage_list(&app.session, *alphabetical);
     let list = list.as_array().cloned().unwrap_or_default();
     let str_of = |v: &Value, k: &str| v.get(k).and_then(Value::as_str).unwrap_or("").to_string();
     if !list.iter().any(|x| str_of(x, "id") == *selected) {
@@ -2698,7 +2694,7 @@ fn describe(st: &Value) -> String {
 
 /// path data; Insert (or a double click) runs `insert.icon`. Returns true to close.
 fn icons_body(app: &mut WordApp, ui: &mut Ui, query: &mut String, category: &mut String, selected: &mut String) -> bool {
-    use wordcraft_render::icon_lib::{self, Category};
+    use woant_office_render::icon_lib::{self, Category};
     let t = Tokens::get(ui.ctx());
     ui.set_width(560.0);
     // Typing goes to the search box (never to the document behind the dialog).
@@ -2804,16 +2800,16 @@ fn enclose_preview(ui: &mut Ui, style: &str, text: &str, shape: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wordcraft_doc::props::Align;
-    use wordcraft_engine::Session;
+    use woant_office_doc::props::Align;
+    use woant_office_engine::Session;
 
     fn app_with(text: &str) -> WordApp {
-        let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+        let mut app = WordApp::new(Session::new(woant_office_doc::Document::new()), crate::Services::default());
         let _ = app.run("document.setText", json!({"text": text}));
         app
     }
 
-    fn props(app: &WordApp) -> wordcraft_doc::props::ParaProps {
+    fn props(app: &WordApp) -> woant_office_doc::props::ParaProps {
         app.session.doc.para_at(&app.session.sel.focus).map(|p| p.props.clone()).unwrap_or_default()
     }
 
@@ -3004,17 +3000,17 @@ mod tests {
             *size = "14".into();
         }
         apply_font(&mut app, &d);
-        let c = app.session.doc.para_at(&wordcraft_doc::Pos::body(0, 0)).map(|p| p.props_of_char(0).clone()).unwrap_or_default();
+        let c = app.session.doc.para_at(&woant_office_doc::Pos::body(0, 0)).map(|p| p.props_of_char(0).clone()).unwrap_or_default();
         assert_eq!(c.size, Some(14.0));
         assert_eq!((c.small_caps, c.caps, c.hidden, c.spacing), (Some(true), Some(true), Some(true), Some(2.0)));
-        assert_eq!(c.underline, Some(wordcraft_doc::props::Underline::Double));
+        assert_eq!(c.underline, Some(woant_office_doc::props::Underline::Double));
         // A field the user does change still applies.
         let Some(mut d) = Dialog::open("font", &mut app) else { panic!("no font dialog") };
         if let Dialog::Font { small_caps, .. } = &mut d {
             *small_caps = false;
         }
         apply_font(&mut app, &d);
-        let c = app.session.doc.para_at(&wordcraft_doc::Pos::body(0, 0)).map(|p| p.props_of_char(0).clone()).unwrap_or_default();
+        let c = app.session.doc.para_at(&woant_office_doc::Pos::body(0, 0)).map(|p| p.props_of_char(0).clone()).unwrap_or_default();
         assert_eq!((c.small_caps, c.caps, c.size), (Some(false), Some(true), Some(14.0)));
     }
 }

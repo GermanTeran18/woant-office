@@ -2,8 +2,8 @@
 //! commands on Persian text, arrow keys in bidirectional text, DOCX save and open.
 
 use serde_json::json;
-use wordcraft_doc::props::Align;
-use wordcraft_doc::{Pos, StoryRef};
+use woant_office_doc::props::Align;
+use woant_office_doc::{Pos, StoryRef};
 
 use crate::Session;
 
@@ -13,7 +13,7 @@ fn run(s: &mut Session, id: &str, v: serde_json::Value) -> serde_json::Value {
 
 /// A session with `text` (paragraphs split on `\n`), every paragraph right to left when `rtl`.
 fn session(text: &str, rtl: bool) -> Session {
-    let mut s = Session::new(wordcraft_doc::Document::new());
+    let mut s = Session::new(woant_office_doc::Document::new());
     run(&mut s, "document.setText", json!({"text": text}));
     if rtl {
         run(&mut s, "select.all", json!({}));
@@ -23,8 +23,8 @@ fn session(text: &str, rtl: bool) -> Session {
     s
 }
 
-fn props(s: &Session, i: usize) -> wordcraft_doc::props::ParaProps {
-    s.doc.para(StoryRef::Body, &wordcraft_doc::Path::top(i)).unwrap().props.clone()
+fn props(s: &Session, i: usize) -> woant_office_doc::props::ParaProps {
+    s.doc.para(StoryRef::Body, &woant_office_doc::Path::top(i)).unwrap().props.clone()
 }
 
 fn caret_x(s: &mut Session) -> f32 {
@@ -76,17 +76,17 @@ fn font_commands_reach_persian_text() {
     run(&mut s, "format.bold", json!({}));
     run(&mut s, "format.size", json!({"size": 18}));
     run(&mut s, "format.font", json!({"name": "Vazirmatn"}));
-    let p = s.doc.para(StoryRef::Body, &wordcraft_doc::Path::top(0)).unwrap();
+    let p = s.doc.para(StoryRef::Body, &woant_office_doc::Path::top(0)).unwrap();
     let c = p.props_of_char(0).clone();
     let rc = s.doc.styles.resolve_char(None, &c).complex();
     assert_eq!((rc.font.as_str(), rc.size, rc.bold), ("Vazirmatn", 18.0, true), "the complex-script formatting follows");
     // Saved and reopened, Word sees bold and size for the Persian text too.
     let bytes = crate::io::save_bytes("x.docx", &s.doc).unwrap();
     let d = crate::io::open_bytes("x.docx", &bytes).unwrap();
-    let c = d.para(StoryRef::Body, &wordcraft_doc::Path::top(0)).unwrap().props_of_char(0).clone();
+    let c = d.para(StoryRef::Body, &woant_office_doc::Path::top(0)).unwrap().props_of_char(0).clone();
     let rc = d.styles.resolve_char(None, &c).complex();
     assert_eq!((rc.font.as_str(), rc.size, rc.bold), ("Vazirmatn", 18.0, true));
-    assert_eq!(d.para(StoryRef::Body, &wordcraft_doc::Path::top(0)).unwrap().props.bidi, Some(true));
+    assert_eq!(d.para(StoryRef::Body, &woant_office_doc::Path::top(0)).unwrap().props.bidi, Some(true));
 }
 
 #[test]
@@ -154,10 +154,10 @@ fn word_moves_follow_reading_order() {
 #[test]
 fn typing_persian_keeps_logical_order() {
     let mut s = session("", true);
-    for w in ["سلام", " ", "WordCraft", " ", "۱۴۰۳"] {
+    for w in ["سلام", " ", "Woant Office", " ", "۱۴۰۳"] {
         run(&mut s, "text.insert", json!({"text": w}));
     }
-    assert_eq!(s.doc.plain_text(StoryRef::Body), "سلام WordCraft ۱۴۰۳");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "سلام Woant Office ۱۴۰۳");
     // The caret after typing a number at the end sits right after it on the screen.
     let l = s.layout();
     let c = l.caret(&s.sel.focus).unwrap();

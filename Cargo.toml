@@ -1,33 +1,33 @@
 [workspace]
 resolver = "3"
 members = ["crates/*", "apps/*", "xtask"]
-default-members = ["crates/*", "apps/wordcraft", "apps/wordcraft-cli", "xtask"]
+default-members = ["crates/*", "apps/woant-office", "apps/woant-office-cli", "xtask"]
 
 [workspace.package]
 version = "0.5.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 rust-version = "1.90"
-repository = "https://github.com/storytold/wordcraft"
+repository = "https://github.com/GermanTeran18/woant-office"
 
 [workspace.dependencies]
 # internal
-wordcraft-geom = { path = "crates/geom" }
-wordcraft-doc = { path = "crates/doc" }
-wordcraft-fonts = { path = "crates/fonts" }
-wordcraft-layout = { path = "crates/layout" }
-wordcraft-docx = { path = "crates/docx" }
-wordcraft-docbin = { path = "crates/docbin" }
-wordcraft-formats = { path = "crates/formats" }
-wordcraft-render = { path = "crates/render" }
-wordcraft-pdf = { path = "crates/pdf" }
-wordcraft-proof = { path = "crates/proof" }
-wordcraft-engine = { path = "crates/engine" }
-wordcraft-mcp = { path = "crates/mcp" }
-wordcraft-zotero = { path = "crates/zotero" }
-wordcraft-control-key = { path = "crates/control-key" }
-wordcraft-ui-egui = { path = "crates/ui-egui" }
-wordcraft-metafile = { path = "crates/metafile" }
+woant-office-geom = { path = "crates/geom" }
+woant-office-doc = { path = "crates/doc" }
+woant-office-fonts = { path = "crates/fonts" }
+woant-office-layout = { path = "crates/layout" }
+woant-office-docx = { path = "crates/docx" }
+woant-office-docbin = { path = "crates/docbin" }
+woant-office-formats = { path = "crates/formats" }
+woant-office-render = { path = "crates/render" }
+woant-office-pdf = { path = "crates/pdf" }
+woant-office-proof = { path = "crates/proof" }
+woant-office-engine = { path = "crates/engine" }
+woant-office-mcp = { path = "crates/mcp" }
+woant-office-zotero = { path = "crates/zotero" }
+woant-office-control-key = { path = "crates/control-key" }
+woant-office-ui-egui = { path = "crates/ui-egui" }
+woant-office-metafile = { path = "crates/metafile" }
 
 # foundation
 kurbo = { version = "0.13", features = ["serde"] }

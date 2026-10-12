@@ -7,28 +7,28 @@ use crate::theme::{Tokens, medium, regular, semibold};
 use crate::widgets::{CONTENT_H, LABEL_H, big, big_toggle, color_grid, combo, font_combo, group, menu_button, small, split};
 use crate::{WordApp, icons};
 
-pub const TABS: [&str; 13] = wordcraft_engine::ribbon::TABS;
+pub const TABS: [&str; 13] = woant_office_engine::ribbon::TABS;
 
 /// True when the caret/selection touches a picture (#147).
-pub fn has_picture_selected(s: &wordcraft_engine::Session) -> bool {
-    matches!(wordcraft_engine::cmd::objects::selected(s), Some((_, wordcraft_doc::para::InlineObject::Image { .. })))
+pub fn has_picture_selected(s: &woant_office_engine::Session) -> bool {
+    matches!(woant_office_engine::cmd::objects::selected(s), Some((_, woant_office_doc::para::InlineObject::Image { .. })))
 }
 
 /// Whether the selection is a shape, text box or Drawing Canvas (so Shape Format is shown).
-pub fn has_shape_selected(s: &wordcraft_engine::Session) -> bool {
-    match wordcraft_engine::cmd::objects::selected(s) {
-        Some((_, o)) => matches!(o, wordcraft_doc::para::InlineObject::Shape { .. }) || o.is_canvas(),
+pub fn has_shape_selected(s: &woant_office_engine::Session) -> bool {
+    match woant_office_engine::cmd::objects::selected(s) {
+        Some((_, o)) => matches!(o, woant_office_doc::para::InlineObject::Shape { .. }) || o.is_canvas(),
         None => false,
     }
 }
 
-/// Whether the selection is a chart WordCraft can edit (so Chart Design is shown).
-pub fn has_chart_selected(s: &wordcraft_engine::Session) -> bool {
-    wordcraft_engine::cmd::chart::selected_chart(s).is_some()
+/// Whether the selection is a chart Woant Office can edit (so Chart Design is shown).
+pub fn has_chart_selected(s: &woant_office_engine::Session) -> bool {
+    woant_office_engine::cmd::chart::selected_chart(s).is_some()
 }
 
 /// Contextual tabs for the current selection (pure, tested).
-pub fn contextual_tabs(s: &wordcraft_engine::Session) -> Vec<&'static str> {
+pub fn contextual_tabs(s: &woant_office_engine::Session) -> Vec<&'static str> {
     let mut tabs = Vec::new();
     if s.sel.focus.path.cell().is_some() {
         tabs.push("Table Design");
@@ -101,7 +101,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
                 ui.spacing_mut().item_spacing = vec2(2.0, 0.0);
                 for (tab, custom) in &tabs {
                     let (tab, custom) = (tab.as_str(), *custom);
-                    let contextual = !custom && wordcraft_engine::ribbon::CONTEXTUAL_TABS.contains(&tab);
+                    let contextual = !custom && woant_office_engine::ribbon::CONTEXTUAL_TABS.contains(&tab);
                     // A custom tab's name is the user's own text: shown as typed.
                     let shown = if custom { tab } else { tl!(tab) };
                     let w = ui.ctx().fonts_mut(|f| f.layout_no_wrap(shown.to_string(), medium(12.5), t.text).size().x) + 18.0;
@@ -247,7 +247,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
 
 /// Custom groups (Customize Ribbon, #379): up to three commands as large buttons, more as small
 /// labelled buttons in columns of three. Each shows the command's own icon and label.
-fn custom_groups(app: &mut WordApp, ui: &mut Ui, groups: &[wordcraft_engine::ribbon::CustomGroup]) {
+fn custom_groups(app: &mut WordApp, ui: &mut Ui, groups: &[woant_office_engine::ribbon::CustomGroup]) {
     for g in groups {
         let ids: Vec<(&str, String)> =
             g.commands.iter().filter_map(|id| app.session.registry.get(id).map(|s| (s.id, tl!(s.label).to_string()))).collect();
@@ -363,8 +363,10 @@ fn home(app: &mut WordApp, ui: &mut Ui) {
                     .and_then(Value::as_f64)
                     .map(|s| if s.fract() == 0.0 { format!("{s:.0}") } else { format!("{s}") })
                     .unwrap_or_default();
-                let sizes: Vec<String> =
-                    wordcraft_engine::cmd::format::SIZES.iter().map(|s| if s.fract() == 0.0 { format!("{s:.0}") } else { s.to_string() }).collect();
+                let sizes: Vec<String> = woant_office_engine::cmd::format::SIZES
+                    .iter()
+                    .map(|s| if s.fract() == 0.0 { format!("{s:.0}") } else { s.to_string() })
+                    .collect();
                 if let Some(v) = combo(ui, "size", 52.0, &size, &sizes, None)
                     && let Ok(x) = v.trim().parse::<f64>()
                 {
@@ -424,10 +426,10 @@ fn home(app: &mut WordApp, ui: &mut Ui) {
                 });
                 let hl = app.canvas.last_highlight.clone();
                 split(ui, app, "highlight", "Text Highlight Color", "format.highlight", json!({"color": hl}), false, None, |ui, app| {
-                    let grid = wordcraft_doc::props::Highlight::ALL;
+                    let grid = woant_office_doc::props::Highlight::ALL;
                     egui::Grid::new("hl").spacing(vec2(3.0, 3.0)).show(ui, |ui| {
                         for (i, h) in grid.iter().enumerate().skip(1) {
-                            let c = h.rgb().unwrap_or(wordcraft_doc::Rgb::WHITE);
+                            let c = h.rgb().unwrap_or(woant_office_doc::Rgb::WHITE);
                             let (r, resp) = ui.allocate_exact_size(vec2(18.0, 18.0), Sense::click());
                             ui.painter().rect_filled(r, 2.0, egui::Color32::from_rgb(c.0, c.1, c.2));
                             if resp.on_hover_text(h.name()).clicked() {
@@ -443,7 +445,7 @@ fn home(app: &mut WordApp, ui: &mut Ui) {
                     mi(ui, app, "No Color", "format.highlight", json!({"color": "none"}));
                 });
                 let fc = app.canvas.last_font_color.clone();
-                let sw = wordcraft_doc::Rgb::parse(&fc).map(crate::theme::c32);
+                let sw = woant_office_doc::Rgb::parse(&fc).map(crate::theme::c32);
                 split(ui, app, "fontcolor", "Font Color", "format.color", json!({"color": fc}), false, sw, |ui, app| {
                     mi(ui, app, "Automatic", "format.color", json!({"color": "auto"}));
                     let theme = app.session.doc.settings.theme_colors.clone();
@@ -519,7 +521,7 @@ fn home(app: &mut WordApp, ui: &mut Ui) {
             });
             ui.add_space(3.0);
             crate::widgets::row(ui, |ui| {
-                use wordcraft_doc::Align as A;
+                use woant_office_doc::Align as A;
                 small(ui, app, "alignLeft", None, "Align Left", "para.alignLeft", json!({}), align == A::Left);
                 small(ui, app, "alignCenter", None, "Center", "para.alignCenter", json!({}), align == A::Center);
                 small(ui, app, "alignRight", None, "Align Right", "para.alignRight", json!({}), align == A::Right);
@@ -749,8 +751,8 @@ fn insert(app: &mut WordApp, ui: &mut Ui) {
 }
 
 fn draw(app: &mut WordApp, ui: &mut Ui) {
-    use wordcraft_doc::freeform::InkTool;
-    use wordcraft_engine::cmd::draw::{DrawMode, lasso_selection};
+    use woant_office_doc::freeform::InkTool;
+    use woant_office_engine::cmd::draw::{DrawMode, lasso_selection};
     let mode = app.session.view.draw.mode;
     // The pen the colour and thickness menus change: the one in use, else the pen.
     let tool = mode.pen().unwrap_or(InkTool::Pen);
@@ -818,8 +820,8 @@ fn draw(app: &mut WordApp, ui: &mut Ui) {
 }
 
 /// The command that picks up `tool`.
-fn pen_command(tool: wordcraft_doc::freeform::InkTool) -> &'static str {
-    use wordcraft_doc::freeform::InkTool;
+fn pen_command(tool: woant_office_doc::freeform::InkTool) -> &'static str {
+    use woant_office_doc::freeform::InkTool;
     match tool {
         InkTool::Pen => "draw.pen",
         InkTool::Pencil => "draw.pencil",
@@ -829,7 +831,7 @@ fn pen_command(tool: wordcraft_doc::freeform::InkTool) -> &'static str {
 
 /// After the colour or thickness menu changed `tool`'s settings, the gallery pen that was in use
 /// (`custom`) takes them too.
-fn update_gallery_pen(app: &mut WordApp, custom: Option<usize>, tool: wordcraft_doc::freeform::InkTool) {
+fn update_gallery_pen(app: &mut WordApp, custom: Option<usize>, tool: woant_office_doc::freeform::InkTool) {
     let set = app.session.view.draw.settings(tool);
     if let Some(p) = custom.and_then(|i| app.session.view.draw.pens.get_mut(i))
         && p.kind == tool
@@ -841,8 +843,8 @@ fn update_gallery_pen(app: &mut WordApp, custom: Option<usize>, tool: wordcraft_
 
 /// A pen of the gallery: its kind's icon over a bar of its colour and thickness; a click picks it
 /// up, right-click offers Remove Pen.
-fn gallery_pen(ui: &mut Ui, app: &mut WordApp, i: usize, pen: wordcraft_engine::cmd::draw::CustomPen, active: bool) {
-    use wordcraft_doc::freeform::InkTool;
+fn gallery_pen(ui: &mut Ui, app: &mut WordApp, i: usize, pen: woant_office_engine::cmd::draw::CustomPen, active: bool) {
+    use woant_office_doc::freeform::InkTool;
     let t = Tokens::get(ui.ctx());
     let (r, resp) = ui.allocate_exact_size(vec2(34.0, CONTENT_H), Sense::click());
     crate::widgets::bg(ui, r, &resp, active, &t);
@@ -877,7 +879,7 @@ fn gallery_pen(ui: &mut Ui, app: &mut WordApp, i: usize, pen: wordcraft_engine::
 fn design(app: &mut WordApp, ui: &mut Ui) {
     group(ui, "Themes", None, app, |ui, app| {
         menu_button(ui, app, "themes", Some("Themes"), "Themes", true, |ui, app| {
-            for (name, ..) in wordcraft_engine::cmd::design::THEMES {
+            for (name, ..) in woant_office_engine::cmd::design::THEMES {
                 mi(ui, app, name, "design.theme", json!({"name": name}));
             }
         });
@@ -886,12 +888,12 @@ fn design(app: &mut WordApp, ui: &mut Ui) {
         crate::previews::style_set_gallery(app, ui);
         stack(ui, |ui| {
             menu_button(ui, app, "colors", Some("Colors"), "Theme Colors", false, |ui, app| {
-                for (name, ..) in wordcraft_engine::cmd::design::THEMES {
+                for (name, ..) in woant_office_engine::cmd::design::THEMES {
                     mi(ui, app, name, "design.themeColors", json!({"name": name}));
                 }
             });
             menu_button(ui, app, "fonts", Some("Fonts"), "Theme Fonts", false, |ui, app| {
-                for (name, h, b, _) in wordcraft_engine::cmd::design::THEMES {
+                for (name, h, b, _) in woant_office_engine::cmd::design::THEMES {
                     mi_text(ui, app, &format!("{}: {h} / {b}", tl!(name)), "design.themeFonts", json!({"heading": h, "body": b}));
                 }
             });
@@ -955,7 +957,7 @@ fn layout(app: &mut WordApp, ui: &mut Ui) {
             mi(ui, app, "Landscape", "layout.orientation", json!({"value": "landscape"}));
         });
         menu_button(ui, app, "size", Some("Size"), "Size", true, |ui, app| {
-            for (n, w, h) in wordcraft_geom::PAPER_SIZES {
+            for (n, w, h) in woant_office_geom::PAPER_SIZES {
                 mi(ui, app, &format!("{n}   {:.2}\" × {:.2}\"", w / 72.0, h / 72.0), "layout.size", json!({"name": n}));
             }
         });
@@ -1061,11 +1063,11 @@ fn layout(app: &mut WordApp, ui: &mut Ui) {
 /// Arrange › Wrap Text: how the selected object sits in the text, and (Square, Tight, Through)
 /// which of its sides text flows on.
 fn wrap_menu(ui: &mut Ui, app: &mut WordApp) {
-    let (wrap, side) = wordcraft_engine::cmd::objects::selected(&app.session)
+    let (wrap, side) = woant_office_engine::cmd::objects::selected(&app.session)
         .and_then(|(_, o)| o.frame().map(|(_, _, f)| (f.wrap, f.wrap_text)))
         .unwrap_or_default();
     menu_button(ui, app, "wrapText", Some("Wrap\nText"), "Wrap Text", true, |ui, app| {
-        use wordcraft_doc::para::{Wrap, WrapText};
+        use woant_office_doc::para::{Wrap, WrapText};
         for (l, w, v) in [
             ("In Line with Text", Wrap::Inline, "inline"),
             ("Square", Wrap::Square, "square"),
@@ -1102,7 +1104,7 @@ fn rotate_menu(ui: &mut Ui, app: &mut WordApp, label: Option<&str>) {
 
 /// Size › Rotation: the selected object's exact angle (a drag of the field is one undo step).
 fn rotation_field(ui: &mut Ui, app: &mut WordApp) {
-    let deg0 = wordcraft_engine::cmd::objects::selected(&app.session).and_then(|(_, o)| o.frame().map(|(_, _, f)| f.spin().deg)).unwrap_or(0.0);
+    let deg0 = woant_office_engine::cmd::objects::selected(&app.session).and_then(|(_, o)| o.frame().map(|(_, _, f)| f.spin().deg)).unwrap_or(0.0);
     ui.label(egui::RichText::new(tl!("Rotation:")).small());
     let mut deg = deg0;
     let r = ui.add(egui::DragValue::new(&mut deg).speed(1.0).range(-360.0..=360.0).max_decimals(1).suffix("°"));
@@ -1170,7 +1172,7 @@ fn references(app: &mut WordApp, ui: &mut Ui) {
             let current = app.session.bib_style.clone();
             let label = crate::i18n::fmt(tl!("Style: {style}"), &[("style", &current)]);
             menu_button(ui, app, "styles", Some(&label), "Citation Style", false, |ui, app| {
-                for st in &wordcraft_engine::cmd::citations::STYLES {
+                for st in &woant_office_engine::cmd::citations::STYLES {
                     mi_check(ui, app, st.name, st.name == current, "references.citationStyle", json!({"style": st.name}));
                 }
             });
@@ -1470,7 +1472,6 @@ fn view(app: &mut WordApp, ui: &mut Ui) {
 fn help(app: &mut WordApp, ui: &mut Ui) {
     group(ui, "Help", None, app, |ui, app| {
         big(ui, app, "help", "Help", "ui.dialog", json!({"name": "about"}), false);
-        big(ui, app, "discord", "Community\nDiscord", "ui.discord", json!({}), false);
     });
     group(ui, "Agents", None, app, |ui, app| {
         big(ui, app, "macros", "Commands", "ui.dialog", json!({"name": "commands"}), false);
@@ -1480,7 +1481,7 @@ fn help(app: &mut WordApp, ui: &mut Ui) {
 /// Chart Design: the selected chart's elements (title, legend, data labels), its data and type,
 /// and its size.
 fn chart_design(app: &mut WordApp, ui: &mut Ui) {
-    let Some(chart) = wordcraft_engine::cmd::chart::selected_chart(&app.session) else { return };
+    let Some(chart) = woant_office_engine::cmd::chart::selected_chart(&app.session) else { return };
     group(ui, "Chart Layouts", None, app, |ui, app| {
         menu_button(ui, app, "chartTitle", Some("Chart Title"), "Chart Title", true, |ui, app| {
             mi_check(ui, app, "None", chart.title.is_none(), "chart.title", json!({"text": null}));
@@ -1490,10 +1491,10 @@ fn chart_design(app: &mut WordApp, ui: &mut Ui) {
         menu_button(ui, app, "legend", Some("Legend"), "Legend", true, |ui, app| {
             mi_check(ui, app, "None", chart.legend.is_none(), "chart.legend", json!({"pos": "none"}));
             for (label, pos) in [
-                ("Right", wordcraft_doc::chart::LegendPos::Right),
-                ("Top", wordcraft_doc::chart::LegendPos::Top),
-                ("Left", wordcraft_doc::chart::LegendPos::Left),
-                ("Bottom", wordcraft_doc::chart::LegendPos::Bottom),
+                ("Right", woant_office_doc::chart::LegendPos::Right),
+                ("Top", woant_office_doc::chart::LegendPos::Top),
+                ("Left", woant_office_doc::chart::LegendPos::Left),
+                ("Bottom", woant_office_doc::chart::LegendPos::Bottom),
             ] {
                 mi_check(ui, app, label, chart.legend == Some(pos), "chart.legend", json!({"pos": pos.id()}));
             }
@@ -1511,7 +1512,7 @@ fn chart_design(app: &mut WordApp, ui: &mut Ui) {
     });
     group(ui, "Size", None, app, |ui, app| {
         let (w0, h0) =
-            wordcraft_engine::cmd::objects::selected(&app.session).and_then(|(_, o)| o.frame().map(|(w, h, _)| (w, h))).unwrap_or((0.0, 0.0));
+            woant_office_engine::cmd::objects::selected(&app.session).and_then(|(_, o)| o.frame().map(|(w, h, _)| (w, h))).unwrap_or((0.0, 0.0));
         stack(ui, |ui| {
             for (label, key, v0) in [("H:", "height", h0), ("W:", "width", w0)] {
                 crate::widgets::row(ui, |ui| {
@@ -1532,8 +1533,8 @@ fn chart_design(app: &mut WordApp, ui: &mut Ui) {
 
 /// Shape Format: fill, outline and effects of the selected shape, and its arrangement.
 fn shape_format(app: &mut WordApp, ui: &mut Ui) {
-    let (stroke, glow_size) = match wordcraft_engine::cmd::objects::selected(&app.session) {
-        Some((_, wordcraft_doc::para::InlineObject::Shape { stroke, effects, .. })) => (stroke, effects.glow.map(|g| g.size)),
+    let (stroke, glow_size) = match woant_office_engine::cmd::objects::selected(&app.session) {
+        Some((_, woant_office_doc::para::InlineObject::Shape { stroke, effects, .. })) => (stroke, effects.glow.map(|g| g.size)),
         _ => (None, None),
     };
     let theme = app.session.doc.settings.theme_colors.clone();
@@ -1554,7 +1555,7 @@ fn shape_format(app: &mut WordApp, ui: &mut Ui) {
                 }
                 ui.separator();
                 ui.menu_button(tl!("Weight"), |ui| {
-                    let color = stroke.unwrap_or(wordcraft_doc::Rgb::BLACK).hex();
+                    let color = stroke.unwrap_or(woant_office_doc::Rgb::BLACK).hex();
                     for w in [0.25, 0.5, 0.75, 1.0, 1.5, 2.25, 3.0, 4.5, 6.0] {
                         mi(ui, app, &format!("{w} pt"), "shape.outline", json!({"color": color, "width": w}));
                     }
@@ -1566,7 +1567,7 @@ fn shape_format(app: &mut WordApp, ui: &mut Ui) {
         });
     });
     alt_text_group(ui, app);
-    if wordcraft_engine::cmd::canvas::selected_canvas(&app.session).is_some() {
+    if woant_office_engine::cmd::canvas::selected_canvas(&app.session).is_some() {
         group(ui, "Drawing Canvas", None, app, |ui, app| {
             menu_button(ui, app, "canvas", Some("Drawing\nCanvas"), "Drawing Canvas", true, |ui, app| {
                 mi(ui, app, "Fit", "canvas.fit", json!({}));
@@ -1605,7 +1606,7 @@ fn shape_format(app: &mut WordApp, ui: &mut Ui) {
     });
     group(ui, "Size", None, app, |ui, app| {
         let (w0, h0) =
-            wordcraft_engine::cmd::objects::selected(&app.session).and_then(|(_, o)| o.frame().map(|(w, h, _)| (w, h))).unwrap_or((0.0, 0.0));
+            woant_office_engine::cmd::objects::selected(&app.session).and_then(|(_, o)| o.frame().map(|(w, h, _)| (w, h))).unwrap_or((0.0, 0.0));
         stack(ui, |ui| {
             crate::widgets::row(ui, |ui| {
                 for (label, key, v0) in [("W:", "width", w0), ("H:", "height", h0)] {
@@ -1629,8 +1630,8 @@ fn shape_format(app: &mut WordApp, ui: &mut Ui) {
 /// Shape Format › Text: the text box's Text Direction and Align Text, and Create Link (Break Link
 /// once it is linked to another box).
 fn shape_text_group(app: &mut WordApp, ui: &mut Ui) {
-    use wordcraft_doc::props::{TextVert, VAlign};
-    let target = wordcraft_engine::cmd::objects::text_box_target(&app.session);
+    use woant_office_doc::props::{TextVert, VAlign};
+    let target = woant_office_engine::cmd::objects::text_box_target(&app.session);
     let body = target.and_then(|(_, id)| app.session.doc.parts.get(&id).map(|p| p.body)).unwrap_or_default();
     group(ui, "Text", None, app, |ui, app| {
         stack(ui, |ui| {
@@ -1646,7 +1647,14 @@ fn shape_text_group(app: &mut WordApp, ui: &mut Ui) {
             });
             menu_button(ui, app, "alignText", Some("Align Text"), "Align Text", false, |ui, app| {
                 for (label, anchor) in [("Top", VAlign::Top), ("Middle", VAlign::Center), ("Bottom", VAlign::Bottom)] {
-                    mi_check(ui, app, label, body.anchor == anchor, "shape.alignText", json!({"anchor": wordcraft_doc::props::anchor_ooxml(anchor)}));
+                    mi_check(
+                        ui,
+                        app,
+                        label,
+                        body.anchor == anchor,
+                        "shape.alignText",
+                        json!({"anchor": woant_office_doc::props::anchor_ooxml(anchor)}),
+                    );
                 }
             });
             if body.next.is_some() {
@@ -1667,11 +1675,11 @@ fn alt_text_group(ui: &mut Ui, app: &mut WordApp) {
 }
 
 /// Shape Format › Shape Effects: Shadow, Glow and Soft Edges, each with presets and a "No …" entry.
-fn shape_effects_menu(ui: &mut Ui, app: &mut WordApp, theme: &[wordcraft_doc::Rgb], glow_size: Option<f32>) {
+fn shape_effects_menu(ui: &mut Ui, app: &mut WordApp, theme: &[woant_office_doc::Rgb], glow_size: Option<f32>) {
     ui.menu_button(tl!("Shadow"), |ui| {
         mi(ui, app, "No Shadow", "shape.effects", json!({"shadow": null}));
         ui.separator();
-        for (id, label) in wordcraft_doc::effects::SHADOW_PRESETS {
+        for (id, label) in woant_office_doc::effects::SHADOW_PRESETS {
             mi(ui, app, label, "shape.effects", json!({"shadow": id}));
         }
     });
@@ -1765,8 +1773,8 @@ fn picture_format(app: &mut WordApp, ui: &mut Ui) {
         });
     });
     group(ui, "Size", None, app, |ui, app| {
-        let (media, off, w0, h0, crop0, alt0) = match wordcraft_engine::cmd::objects::selected(&app.session) {
-            Some((pos, wordcraft_doc::para::InlineObject::Image { media, w, h, alt, crop, .. })) => (media, pos.off, w, h, crop, alt),
+        let (media, off, w0, h0, crop0, alt0) = match woant_office_engine::cmd::objects::selected(&app.session) {
+            Some((pos, woant_office_doc::para::InlineObject::Image { media, w, h, alt, crop, .. })) => (media, pos.off, w, h, crop, alt),
             _ => (String::new(), 0, 0.0, 0.0, [0.0; 4], String::new()),
         };
         // `picture.size` locks the aspect ratio unless told otherwise, so one dimension suffices.
@@ -1867,7 +1875,7 @@ fn table_design(app: &mut WordApp, ui: &mut Ui) {
             .styles
             .styles
             .iter()
-            .filter(|s| s.kind == wordcraft_doc::StyleKind::Table && !s.hidden)
+            .filter(|s| s.kind == woant_office_doc::StyleKind::Table && !s.hidden)
             .map(|s| (s.builtin, s.id.clone(), crate::i18n::style_name(s)))
             .collect();
         styles.sort_by_key(|(builtin, _, _)| *builtin);
@@ -1888,8 +1896,8 @@ fn table_design(app: &mut WordApp, ui: &mut Ui) {
                     .doc
                     .styles
                     .get(&id)
-                    .filter(|st| st.kind == wordcraft_doc::StyleKind::Table)
-                    .map(wordcraft_engine::cmd::table_style::is_builtin_table_style)
+                    .filter(|st| st.kind == woant_office_doc::StyleKind::Table)
+                    .map(woant_office_engine::cmd::table_style::is_builtin_table_style)
             });
             let can_modify = current.is_some();
             // Built-in table styles can't be deleted.
@@ -1945,16 +1953,16 @@ fn cell_size_boxes(ui: &mut Ui, app: &mut WordApp) {
     let row = t.rows.get(r).map(|x| x.props.clone()).unwrap_or_default();
     let stored_w = t.grid.get(t.grid_col(r, c)).copied();
     let laid = app.session.layout().pages.iter().flat_map(|pg| pg.items.iter()).find_map(|it| match it {
-        wordcraft_layout::Placed::Cell { rect, table, row, cell, story: st } if *table == tp && *row == r && *cell == c && *st == story => {
+        woant_office_layout::Placed::Cell { rect, table, row, cell, story: st } if *table == tp && *row == r && *cell == c && *st == story => {
             Some(*rect)
         }
         _ => None,
     });
-    let unit = wordcraft_geom::Unit::default();
+    let unit = woant_office_geom::Unit::default();
     let k = unit.pt_per_unit();
     let h0 = row.height.or(laid.map(|x| x.h)).unwrap_or(0.0);
     let w0 = laid.map(|x| x.w).or(stored_w).unwrap_or(0.0);
-    let exact = row.height_rule == wordcraft_doc::props::HeightRule::Exact;
+    let exact = row.height_rule == woant_office_doc::props::HeightRule::Exact;
     // The edited value in points, and whether it continues a drag (joins the previous Undo step).
     let boxed = |ui: &mut Ui, label: &str, pt: f32| -> Option<(f32, bool)> {
         let mut out = None;
@@ -2066,7 +2074,7 @@ fn table_layout(app: &mut WordApp, ui: &mut Ui) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wordcraft_engine::Session;
+    use woant_office_engine::Session;
 
     fn png_data() -> String {
         let img = image::RgbaImage::from_fn(20, 10, |x, y| {
@@ -2074,12 +2082,12 @@ mod tests {
         });
         let mut b = Vec::new();
         image::DynamicImage::ImageRgba8(img).write_to(&mut std::io::Cursor::new(&mut b), image::ImageFormat::Png).unwrap();
-        wordcraft_engine::cmd::insert::base64_encode(&b)
+        woant_office_engine::cmd::insert::base64_encode(&b)
     }
 
     #[test]
     fn picture_format_tab_appears_when_picture_selected() {
-        let mut s = Session::new(wordcraft_doc::Document::new());
+        let mut s = Session::new(woant_office_doc::Document::new());
         assert!(!has_picture_selected(&s));
         assert!(!contextual_tabs(&s).contains(&"Picture Format"));
         s.run("insert.picture", &json!({"data": png_data()})).unwrap();
@@ -2092,7 +2100,7 @@ mod tests {
 
     #[test]
     fn shape_format_tab_appears_when_shape_selected() {
-        let mut s = Session::new(wordcraft_doc::Document::new());
+        let mut s = Session::new(woant_office_doc::Document::new());
         s.run("insert.shape", &json!({"kind": "rectangle"})).unwrap();
         assert!(contextual_tabs(&s).contains(&"Shape Format"));
         assert!(!contextual_tabs(&s).contains(&"Picture Format"));
@@ -2103,7 +2111,7 @@ mod tests {
 
     #[test]
     fn chart_design_tab_appears_when_chart_selected_and_buttons_open_dialogs() {
-        let mut app = crate::WordApp::new(Session::new(wordcraft_doc::Document::new()), Default::default());
+        let mut app = crate::WordApp::new(Session::new(woant_office_doc::Document::new()), Default::default());
         // Insert › Chart without a type opens the gallery; choosing inserts.
         let _ = app.run("insert.chart", json!({}));
         assert_eq!(app.dialog.as_ref().map(crate::dialogs::Dialog::name), Some("insertChart"));

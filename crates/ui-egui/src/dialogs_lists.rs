@@ -5,8 +5,8 @@
 use egui::{Sense, Ui, vec2};
 use serde::Serialize;
 use serde_json::{Value, json};
-use wordcraft_doc::section::NumFormat;
-use wordcraft_engine::cmd::lists::{LEVELS, caret_list, level_json, levels_of};
+use woant_office_doc::section::NumFormat;
+use woant_office_engine::cmd::lists::{LEVELS, caret_list, level_json, levels_of};
 
 use crate::WordApp;
 use crate::dialogs::buttons;
@@ -52,7 +52,7 @@ pub struct LevelForm {
 
 impl LevelForm {
     fn read(i: usize, v: &Value) -> LevelForm {
-        let k = wordcraft_geom::Unit::default().pt_per_unit();
+        let k = woant_office_geom::Unit::default().pt_per_unit();
         let s = |key: &str| v.get(key).and_then(Value::as_str).unwrap_or("").to_string();
         let f = |key: &str| v.get(key).and_then(Value::as_f64).map(|x| x as f32 / k).filter(|x| x.is_finite());
         let restart_after = v.get("restartAfter").and_then(Value::as_u64);
@@ -78,7 +78,7 @@ impl LevelForm {
 
     /// The level as `list.define` takes it.
     pub fn params(&self, i: usize) -> Value {
-        let k = wordcraft_geom::Unit::default().pt_per_unit();
+        let k = woant_office_geom::Unit::default().pt_per_unit();
         json!({
             "format": self.format,
             "text": self.text,
@@ -113,15 +113,16 @@ impl ListForm {
     /// Starts from the caret's list, or from a new 1. a. i. list.
     pub fn read(app: &WordApp) -> ListForm {
         let s = &app.session;
-        let levels =
-            caret_list(s).and_then(|n| levels_of(s, n)).unwrap_or_else(|| wordcraft_doc::numbering::levels_for(wordcraft_doc::ListKind::Numbered));
+        let levels = caret_list(s)
+            .and_then(|n| levels_of(s, n))
+            .unwrap_or_else(|| woant_office_doc::numbering::levels_for(woant_office_doc::ListKind::Numbered));
         let levels = (0..LEVELS).map(|i| LevelForm::read(i, &levels.get(i).map(level_json).unwrap_or(Value::Null))).collect();
         let mut styles: Vec<(String, String)> = s
             .doc
             .styles
             .styles
             .iter()
-            .filter(|st| st.kind == wordcraft_doc::StyleKind::Paragraph && !st.hidden)
+            .filter(|st| st.kind == woant_office_doc::StyleKind::Paragraph && !st.hidden)
             .map(|st| (st.id.clone(), st.name.clone()))
             .collect();
         styles.sort_by(|a, b| a.1.cmp(&b.1));
@@ -162,8 +163,8 @@ impl ListForm {
 
 /// Define New Multilevel List. Returns true to close.
 pub fn define_list(app: &mut WordApp, ui: &mut Ui, f: &mut ListForm) -> bool {
-    let unit = wordcraft_geom::Unit::default();
-    fn len(v: &mut f32, unit: wordcraft_geom::Unit) -> egui::DragValue<'_> {
+    let unit = woant_office_geom::Unit::default();
+    fn len(v: &mut f32, unit: woant_office_geom::Unit) -> egui::DragValue<'_> {
         egui::DragValue::new(v).speed(0.01).range(-10.0..=22.0).suffix(unit.suffix()).max_decimals(2)
     }
     let heading = |ui: &mut Ui, s: &str| {
@@ -310,7 +311,7 @@ fn preview(ui: &mut Ui, f: &ListForm) {
     let p = ui.painter_at(rect);
     p.rect_filled(rect, 2.0, egui::Color32::WHITE);
     p.rect_stroke(rect, 2.0, egui::Stroke::new(1.0, t.border_strong), egui::StrokeKind::Inside);
-    let k = wordcraft_geom::Unit::default().pt_per_unit();
+    let k = woant_office_geom::Unit::default().pt_per_unit();
     // Positions in points, scaled so 4.5 inches fit.
     let scale = (rect.width() - 16.0) / 324.0;
     let x_of = |v: f32| rect.left() + 8.0 + (v * k * scale).clamp(0.0, rect.width() - 40.0);
@@ -363,9 +364,9 @@ pub struct TrackForm {
 
 impl TrackForm {
     pub fn read(app: &WordApp) -> TrackForm {
-        let v = wordcraft_engine::cmd::review::tracking_json(&app.session.prefs.markup);
+        let v = woant_office_engine::cmd::review::tracking_json(&app.session.prefs.markup);
         let s = |k: &str| v.get(k).and_then(Value::as_str).unwrap_or("").to_string();
-        let c = |k: &str| wordcraft_doc::Rgb::parse(&s(k)).map(|c| c.hex()).unwrap_or_default();
+        let c = |k: &str| woant_office_doc::Rgb::parse(&s(k)).map(|c| c.hex()).unwrap_or_default();
         let b = |k: &str| v.get(k).and_then(Value::as_bool).unwrap_or(true);
         TrackForm {
             comments: b("comments"),
@@ -415,8 +416,8 @@ fn choice(ui: &mut Ui, id: &str, value: &mut String, options: &[(&str, &str)]) {
 
 /// A colour: `none_label` (by author, or `auto` when given) or a colour from the grid. `value` is
 /// hex.
-fn color(ui: &mut Ui, theme: &[wordcraft_doc::Rgb], value: &mut String, none_label: &str, auto: Option<wordcraft_doc::Rgb>) {
-    let c = wordcraft_doc::Rgb::parse(value);
+fn color(ui: &mut Ui, theme: &[woant_office_doc::Rgb], value: &mut String, none_label: &str, auto: Option<woant_office_doc::Rgb>) {
+    let c = woant_office_doc::Rgb::parse(value);
     ui.horizontal(|ui| {
         let (r, _) = ui.allocate_exact_size(vec2(16.0, 16.0), Sense::hover());
         let t = Tokens::get(ui.ctx());
@@ -429,7 +430,7 @@ fn color(ui: &mut Ui, theme: &[wordcraft_doc::Rgb], value: &mut String, none_lab
                 for (k, a) in [0u32, 1, 2].iter().enumerate() {
                     let w = r.width() / 3.0;
                     let part = egui::Rect::from_min_size(r.min + vec2(w * k as f32, 0.0), vec2(w, r.height()));
-                    ui.painter().rect_filled(part, 0.0, crate::theme::c32(wordcraft_layout::display::revision_color(*a)));
+                    ui.painter().rect_filled(part, 0.0, crate::theme::c32(woant_office_layout::display::revision_color(*a)));
                 }
             }
         }
@@ -515,7 +516,7 @@ pub fn track_options(app: &mut WordApp, ui: &mut Ui, f: &mut TrackForm) -> bool 
             &mut f.changed_lines,
             &[("outside", "Outside border"), ("left", "Left border"), ("right", "Right border"), ("none", "None")],
         );
-        color(ui, &theme, &mut f.changed_lines_color, "Automatic", Some(wordcraft_layout::display::CHANGE_BAR));
+        color(ui, &theme, &mut f.changed_lines_color, "Automatic", Some(woant_office_layout::display::CHANGE_BAR));
         ui.end_row();
     });
     ui.add_space(4.0);
@@ -530,13 +531,13 @@ pub fn track_options(app: &mut WordApp, ui: &mut Ui, f: &mut TrackForm) -> bool 
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-    use wordcraft_engine::Session;
+    use woant_office_engine::Session;
 
     use crate::dialogs::Dialog;
     use crate::{Services, WordApp};
 
     fn app() -> WordApp {
-        WordApp::new(Session::new(wordcraft_doc::Document::new()), Services::default())
+        WordApp::new(Session::new(woant_office_doc::Document::new()), Services::default())
     }
 
     /// #328: the ribbon opens Define New Multilevel List; OK defines the list and numbers the
@@ -581,12 +582,12 @@ mod tests {
         a.dialog = None;
         a.run("review.trackingOptions", params).unwrap();
         let m = &a.session.prefs.markup;
-        assert_eq!(m.insert_mark, wordcraft_layout::display::InsertMark::DoubleUnderline);
-        assert_eq!(m.changed_lines_color, Some(wordcraft_doc::Rgb(0xFF, 0, 0)));
+        assert_eq!(m.insert_mark, woant_office_layout::display::InsertMark::DoubleUnderline);
+        assert_eq!(m.changed_lines_color, Some(woant_office_doc::Rgb(0xFF, 0, 0)));
         // Saved and restored with the preferences.
         let saved = a.prefs();
         let mut b = app();
         b.apply_prefs(saved);
-        assert_eq!(b.session.prefs.markup.changed_lines, wordcraft_layout::display::ChangeBar::Right);
+        assert_eq!(b.session.prefs.markup.changed_lines, woant_office_layout::display::ChangeBar::Right);
     }
 }

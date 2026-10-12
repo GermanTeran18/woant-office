@@ -1,6 +1,6 @@
-//! WordCraft DOCX reader and writer (ECMA-376 / ISO/IEC 29500 WordprocessingML).
+//! Woant Office DOCX reader and writer (ECMA-376 / ISO/IEC 29500 WordprocessingML).
 //!
-//! [`read`] turns a `.docx` package into a [`wordcraft_doc::Document`]; [`write`] does the
+//! [`read`] turns a `.docx` package into a [`woant_office_doc::Document`]; [`write`] does the
 //! reverse. Both are written from the public specification. The reader is lenient (unknown
 //! markup is skipped, bad numbers fall back to defaults) and bounded (zip entry sizes, total
 //! decompressed size, XML depth and element counts are capped), so hostile input yields an
@@ -32,12 +32,12 @@ pub const WRONG_PASSWORD: &str = "the password is incorrect";
 /// The `a:ext` URI under a Drawing Canvas's `wpc:extLst` that holds its turn and flips as an
 /// `a:xfrm` (`rot`, `flipH`, `flipV`). Neither the canvas schema nor `wp:anchor` carries a
 /// transform, so this rides in the extension list Word and other readers skip.
-pub(crate) const CANVAS_SPIN_EXT: &str = "urn:wordcraft:canvas-xfrm";
+pub(crate) const CANVAS_SPIN_EXT: &str = "urn:woant-office:canvas-xfrm";
 
 /// Read a package that may be password-protected ([`is_encrypted`]): it is decrypted with
 /// `password` first. An encrypted package without a password gives
 /// [`DocxError::PasswordRequired`]; a wrong one, [`DocxError::WrongPassword`].
-pub fn read_with_password(bytes: &[u8], password: Option<&str>) -> Result<wordcraft_doc::Document, DocxError> {
+pub fn read_with_password(bytes: &[u8], password: Option<&str>) -> Result<woant_office_doc::Document, DocxError> {
     if is_encrypted(bytes) {
         let package = zeroize::Zeroizing::new(decrypt(bytes, password)?);
         return read::read_package(&package);
@@ -112,7 +112,7 @@ pub enum DocxError {
     /// The password doesn't open the package.
     #[error("{}", WRONG_PASSWORD)]
     WrongPassword,
-    /// The package is encrypted in a way WordCraft can't read, or its encryption data is damaged
+    /// The package is encrypted in a way Woant Office can't read, or its encryption data is damaged
     /// (or encrypting failed).
     #[error("encrypted document: {0}")]
     Encryption(String),

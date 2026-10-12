@@ -10,8 +10,8 @@ use egui::{Color32, Ui, vec2};
 use serde::Serialize;
 use serde_json::{Value, json};
 
-use wordcraft_doc::section::LineNumberRestart;
-use wordcraft_engine::cmd::mailings::{ENVELOPE_SIZES, LABEL_PRODUCTS};
+use woant_office_doc::section::LineNumberRestart;
+use woant_office_engine::cmd::mailings::{ENVELOPE_SIZES, LABEL_PRODUCTS};
 
 use crate::WordApp;
 use crate::theme::semibold;
@@ -111,8 +111,8 @@ fn run(app: &mut WordApp, id: &str, params: Value) -> bool {
     }
 }
 
-fn unit() -> wordcraft_geom::Unit {
-    wordcraft_geom::Unit::default()
+fn unit() -> woant_office_geom::Unit {
+    woant_office_geom::Unit::default()
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ pub struct LineNumbersForm {
 
 impl LineNumbersForm {
     pub fn read(app: &WordApp) -> LineNumbersForm {
-        let sp = wordcraft_engine::cmd::page::sect(&app.session);
+        let sp = woant_office_engine::cmd::page::sect(&app.session);
         let l = sp.line_numbers.clone();
         let cur = l.clone().unwrap_or_default();
         LineNumbersForm {
@@ -275,7 +275,7 @@ pub struct ManualForm {
 impl ManualForm {
     /// From the selection, or from the start of the document.
     pub fn start(app: &mut WordApp) -> ManualForm {
-        let from = if app.session.sel.is_collapsed() { Value::Null } else { wordcraft_engine::cmd::pos_json(&app.session.sel.ordered().0) };
+        let from = if app.session.sel.is_collapsed() { Value::Null } else { woant_office_engine::cmd::pos_json(&app.session.sel.ordered().0) };
         let from = if from.is_null() { json!({"block": 0, "off": 0}) } else { from };
         Self::next(app, from)
     }
@@ -639,14 +639,14 @@ fn labels_ui(app: &mut WordApp, ui: &mut Ui, f: &mut LabelsForm) -> bool {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-    use wordcraft_engine::Session;
+    use woant_office_engine::Session;
 
     use super::*;
     use crate::dialogs::Dialog;
     use crate::{Services, WordApp};
 
     fn app() -> WordApp {
-        WordApp::new(Session::new(wordcraft_doc::Document::from_text("Dear Jo,\nThanks.")), Services::default())
+        WordApp::new(Session::new(woant_office_doc::Document::from_text("Dear Jo,\nThanks.")), Services::default())
     }
 
     fn form(a: &mut WordApp) -> LayoutDialog {
@@ -722,7 +722,7 @@ mod tests {
         let secs = a.session.doc.sections();
         assert_eq!(secs.len(), 2);
         assert!((secs[0].1.page_w - 623.6).abs() < 0.1);
-        assert!(a.session.doc.plain_text(wordcraft_doc::StoryRef::Body).contains("Thanks."));
+        assert!(a.session.doc.plain_text(woant_office_doc::StoryRef::Body).contains("Thanks."));
     }
 
     /// #407: Labels builds a new document of the chosen sheet, or a single label.
@@ -735,7 +735,7 @@ mod tests {
         f.product = LABEL_PRODUCTS.iter().position(|p| p.id == "a4-3x8").unwrap();
         let r = a.session.run("mailings.labels", &f.params()).unwrap();
         assert_eq!(r["labels"], 24);
-        assert_eq!(a.session.doc.plain_text(wordcraft_doc::StoryRef::Body).matches("Ada Lovelace").count(), 24);
+        assert_eq!(a.session.doc.plain_text(woant_office_doc::StoryRef::Body).matches("Ada Lovelace").count(), 24);
         f.single = true;
         (f.row, f.col) = (3, 2);
         assert_eq!(a.session.run("mailings.labels", &f.params()).unwrap()["filled"], 1);

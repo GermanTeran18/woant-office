@@ -10,9 +10,9 @@
 
 use egui::{Align2, Color32, Key, Painter, Pos2, Rect, Stroke, Ui, pos2, vec2};
 use serde_json::json;
-use wordcraft_doc::freeform::{InkTool, MAX_POINTS};
-use wordcraft_engine::cmd::draw::DrawMode;
-use wordcraft_layout::DocLayout;
+use woant_office_doc::freeform::{InkTool, MAX_POINTS};
+use woant_office_engine::cmd::draw::DrawMode;
+use woant_office_layout::DocLayout;
 
 use crate::WordApp;
 use crate::canvas::page_at;
@@ -106,7 +106,7 @@ pub fn pointer(app: &mut WordApp, ui: &Ui, resp: &egui::Response, rects: &[Rect]
             if (starts || down)
                 && let Some(erased) = app.canvas.erasing
                 && let Some((page, x, y)) = at.and_then(|p| page_at(rects, layout, scale, p))
-                && wordcraft_engine::cmd::draw::ink_at(&mut app.session, page, x, y).is_some()
+                && woant_office_engine::cmd::draw::ink_at(&mut app.session, page, x, y).is_some()
             {
                 // The first stroke a drag erases starts an undo step; the rest join it.
                 if erased {
@@ -129,7 +129,7 @@ pub fn pointer(app: &mut WordApp, ui: &Ui, resp: &egui::Response, rects: &[Rect]
 fn lasso_pointer(app: &mut WordApp, (starts, down, released, at): (bool, bool, bool, Option<Pos2>), rects: &[Rect], layout: &DocLayout, scale: f32) {
     if starts && let Some((page, x, y)) = at.and_then(|p| page_at(rects, layout, scale, p)) {
         // A press on the selection drags it; anywhere else starts a new loop.
-        let grab = wordcraft_engine::cmd::draw::lasso_bounds(&app.session, layout).is_some_and(|(bp, r)| {
+        let grab = woant_office_engine::cmd::draw::lasso_bounds(&app.session, layout).is_some_and(|(bp, r)| {
             bp == page && x >= r.x - GRAB_SLOP && x <= r.right() + GRAB_SLOP && y >= r.y - GRAB_SLOP && y <= r.bottom() + GRAB_SLOP
         });
         app.canvas.ink_ui.lasso =
@@ -180,7 +180,7 @@ pub fn key(app: &mut WordApp, key: Key) -> bool {
         stop_replay(app);
         return true;
     }
-    let selected = wordcraft_engine::cmd::draw::lasso_selection(&app.session).is_some();
+    let selected = woant_office_engine::cmd::draw::lasso_selection(&app.session).is_some();
     match key {
         Key::Delete | Key::Backspace if selected => {
             let _ = app.run("draw.lassoDelete", json!({}));
@@ -246,7 +246,7 @@ fn paint_lasso(app: &WordApp, painter: &Painter, rects: &[Rect], layout: &DocLay
         }
         painter.extend(dash(&loop_pts));
     }
-    let Some((page, r)) = wordcraft_engine::cmd::draw::lasso_bounds(&app.session, layout) else { return };
+    let Some((page, r)) = woant_office_engine::cmd::draw::lasso_bounds(&app.session, layout) else { return };
     let (dx, dy) = match &app.canvas.ink_ui.lasso {
         Some(LassoDrag::Move { from, to, .. }) => (to[0] - from[0], to[1] - from[1]),
         _ => (0.0, 0.0),
@@ -277,7 +277,7 @@ pub fn replay_tick(app: &mut WordApp, ctx: &egui::Context) {
     }
     if app.canvas.ink_ui.replay.is_none() {
         let mut start = 0.0;
-        let strokes: Vec<ReplayStroke> = wordcraft_engine::cmd::draw::strokes_in_drawing_order(&mut app.session)
+        let strokes: Vec<ReplayStroke> = woant_office_engine::cmd::draw::strokes_in_drawing_order(&mut app.session)
             .into_iter()
             .map(|(page, k)| {
                 let paths = k.paths();

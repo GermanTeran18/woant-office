@@ -2,13 +2,13 @@
 
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-11 · **Change:** trivial (screen readers can read the document canvas, #488; previously trivial: Customize Ribbon and the Quick Access Toolbar, #379; previously: major, first version; ribbon, dialogs, shortcuts and on-canvas interaction measured from `crates/ui-egui` and the command registry) · **Target:** Microsoft Word (Microsoft 365) for Mac 16.113.4
 
-How WordCraft looks and feels next to Word: ribbon, dialogs, panes, keyboard, mouse and touch.
+How Woant Office looks and feels next to Word: ribbon, dialogs, panes, keyboard, mouse and touch.
 Typing behaviour has its own checklist ([`typing-parity.md`](typing-parity.md)). All assets are our
 own (`AGENTS.md`: no Microsoft iconography, ever).
 
 **Dimension: ~65% (estimated), 61–94 h to full** (the sum of the rows below; dialog depth is counted here, not under features).
 
-| Area | WordCraft | Word | Parity | Hours |
+| Area | Woant Office | Word | Parity | Hours |
 |---|---|---|---|---|
 | Ribbon tabs and groups | All Word tabs including contextual Table Design/Layout, Picture Format, Shape Format, Header & Footer, Equation; ribbon overflow (#43, #129). Draw tab: Select, Eraser, Pen, Pencil, Highlighter with colour and thickness (#307); Lasso (drag to move, Delete, recolour), Add Pen gallery (right-click to remove), Ink to Shape, Ink Replay with play/pause/rewind/forward bar (#395); missing: Ink to Math | Same plus Draw | 85% | (Draw in features) |
 | Keytips (Alt / ⌃⌥ letters) | ✅ (#43) | ✅ | 85% | 1–2 |

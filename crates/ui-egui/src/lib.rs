@@ -1,5 +1,5 @@
-//! WordCraft's egui front end: a Word-style window (title bar with Quick Access Toolbar, ribbon,
-//! rulers, page canvas, panes, status bar, Backstage, dialogs) over `wordcraft-engine`.
+//! Woant Office's egui front end: a Word-style window (title bar with Quick Access Toolbar, ribbon,
+//! rulers, page canvas, panes, status bar, Backstage, dialogs) over `woant-office-engine`.
 //!
 //! The UI is thin: it reads `Session` state and acts through [`WordApp::run`] (command ids), so
 //! the menus, ribbon, shortcuts, control channel and MCP all reach the same behaviour.
@@ -58,7 +58,7 @@ pub mod zotero;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use wordcraft_engine::Session;
+use woant_office_engine::Session;
 
 pub use control::ControlRequest;
 pub use file_dialogs::FileDialogRequest;
@@ -117,7 +117,6 @@ pub struct UiState {
     #[serde(rename = "dark", skip_serializing)]
     pub(crate) legacy_dark: Option<bool>,
     pub nav_tab: String,
-    pub show_discord: bool,
     /// User name (File › Options) for comments and tracked changes; empty keeps the default.
     pub author: String,
     /// Desktop: the main window's size and position, restored at the next launch.
@@ -125,7 +124,7 @@ pub struct UiState {
     /// Interface language: `auto` (follow the system) or a code from [`i18n::LANGUAGES`].
     pub language: String,
     /// Editing preferences; the session owns them while running (see [`WordApp::prefs`]).
-    pub editing: wordcraft_engine::Prefs,
+    pub editing: woant_office_engine::Prefs,
     /// Read Aloud speed (1 = normal) and whether it skips citations and bibliographies.
     pub read_aloud_rate: f32,
     pub read_aloud_skip_citations: bool,
@@ -140,17 +139,17 @@ pub struct UiState {
     /// pages: the interface follows [`UiState::theme`] (#312).
     pub dark_page: bool,
     /// Custom keyboard shortcuts (Customize Keyboard, #368); the session owns them while running.
-    pub keyboard: wordcraft_engine::KeyMap,
+    pub keyboard: woant_office_engine::KeyMap,
     /// Custom ribbon tabs and groups, hidden tabs and the Quick Access Toolbar (Customize Ribbon,
     /// #379); the session owns them while running.
-    pub ribbon: wordcraft_engine::RibbonLayout,
+    pub ribbon: woant_office_engine::RibbonLayout,
     /// Caption labels the user added (References › Insert Caption › New Label), kept between
     /// runs like Word keeps them in its Normal template (#402).
     pub caption_labels: Vec<String>,
     /// Draw › Add Pen: the pens added to the pen gallery; the session owns them while running.
     /// Entries that aren't pens are dropped on reading.
-    #[serde(deserialize_with = "wordcraft_engine::cmd::draw::lenient_pens")]
-    pub ink_pens: Vec<wordcraft_engine::cmd::draw::CustomPen>,
+    #[serde(deserialize_with = "woant_office_engine::cmd::draw::lenient_pens")]
+    pub ink_pens: Vec<woant_office_engine::cmd::draw::CustomPen>,
 }
 
 impl Default for UiState {
@@ -166,18 +165,17 @@ impl Default for UiState {
             interface_size: theme::InterfaceSize::default(),
             legacy_dark: None,
             nav_tab: "headings".into(),
-            show_discord: true,
             author: String::new(),
             window: None,
             language: i18n::AUTO.into(),
-            editing: wordcraft_engine::Prefs::default(),
+            editing: woant_office_engine::Prefs::default(),
             read_aloud_rate: 1.0,
             read_aloud_skip_citations: true,
             keytips: crate::keytips::Phase::Off,
             alt_chord_used: false,
             dark_page: false,
-            keyboard: wordcraft_engine::KeyMap::default(),
-            ribbon: wordcraft_engine::RibbonLayout::default(),
+            keyboard: woant_office_engine::KeyMap::default(),
+            ribbon: woant_office_engine::RibbonLayout::default(),
             caption_labels: Vec::new(),
             ink_pens: Vec::new(),
         }
@@ -236,11 +234,11 @@ pub struct WordApp {
     /// The egui context, once the first frame has run (background work wakes the UI with it).
     pub(crate) ctx: Option<egui::Context>,
     /// Read Aloud: the start of the sentence the caret was last moved to, and the last error shown.
-    pub(crate) read_aloud_at: Option<wordcraft_engine::doc::Pos>,
+    pub(crate) read_aloud_at: Option<woant_office_engine::doc::Pos>,
     pub(crate) read_aloud_error: Option<String>,
     /// The file the document was last explicitly saved to in this session; AutoSave writes only
     /// there. A file that was merely opened isn't rewritten until the user saves it: saving drops
-    /// whatever WordCraft can't represent (content controls, charts, macros…).
+    /// whatever Woant Office can't represent (content controls, charts, macros…).
     autosave_path: Option<std::path::PathBuf>,
     /// The file dialog the host is showing, and what its answer is for ([`file_dialogs`]).
     file_dialog: Option<file_dialogs::PendingDialog>,
@@ -433,7 +431,7 @@ impl WordApp {
             if matches!(id, "file.save" | "file.saveAs")
                 && let Some(pw) = params.get("password").filter(|v| !v.is_null())
             {
-                if !wordcraft_engine::io::can_encrypt(&name) || pw.as_str().is_none_or(str::is_empty) {
+                if !woant_office_engine::io::can_encrypt(&name) || pw.as_str().is_none_or(str::is_empty) {
                     return Err("only Word documents (.docx, .docm, .dotx, .dotm) can be saved with a password, and it can't be empty".into());
                 }
                 self.session.run("file.encrypt", &json!({"password": pw})).map_err(|e| e.to_string())?;
@@ -443,9 +441,12 @@ impl WordApp {
                 self.session.stamp_save();
             }
             // Word documents are encrypted with the document's password, if it has one.
-            let password =
-                if matches!(id, "file.save" | "file.saveAs") { self.session.password.as_ref().map(wordcraft_engine::Password::as_str) } else { None };
-            let bytes = wordcraft_engine::io::save_bytes_with(&name, &self.session.doc, password)?;
+            let password = if matches!(id, "file.save" | "file.saveAs") {
+                self.session.password.as_ref().map(woant_office_engine::Password::as_str)
+            } else {
+                None
+            };
+            let bytes = woant_office_engine::io::save_bytes_with(&name, &self.session.doc, password)?;
             if let Some(d) = &self.services.download
                 && let Err(e) = d(&name, &bytes)
             {
@@ -521,7 +522,7 @@ impl WordApp {
         let retry = (id == "file.open").then(|| params.clone());
         let r = self.execute(id, params);
         if let (Err(e), Some(params)) = (&r, retry)
-            && wordcraft_engine::io::needs_password(e)
+            && woant_office_engine::io::needs_password(e)
         {
             let path = params.get("path").and_then(Value::as_str).unwrap_or("");
             let name = std::path::Path::new(path).file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| path.to_string());
@@ -722,14 +723,10 @@ impl WordApp {
             // page; this is the button on it, and the one programmatic call that opens system UI
             // here, like `ui.openFileDialog` — only when the host can print.
             "ui.print" => return Some(self.print_to_system()),
-            "ui.discord" => {
-                self.canvas.open_url = Some("https://discord.gg/artcraft".into());
-                json!({})
-            }
             // Shape Format › Text › Create Link: the next click on an empty text box links the
             // selected box to it (`shape.link` with that box as the target); Esc cancels.
             "ui.linkTextBox" => {
-                let from = wordcraft_engine::cmd::objects::text_box_target(&self.session).filter(|_| widgets::enabled(self, "shape.link"));
+                let from = woant_office_engine::cmd::objects::text_box_target(&self.session).filter(|_| widgets::enabled(self, "shape.link"));
                 let Some((pos, _)) = from else { return Some(Err("select a text box that isn't linked yet first".into())) };
                 self.canvas.link_from = Some(pos);
                 self.status(tl!("Click the empty text box the text should continue in (Esc cancels)"));
@@ -745,7 +742,7 @@ impl WordApp {
         if self.services.print.is_none() {
             return Err("printing to the system print dialog isn't available here; export a PDF instead".into());
         }
-        let result = wordcraft_engine::io::save_bytes("document.pdf", &self.session.doc)
+        let result = woant_office_engine::io::save_bytes("document.pdf", &self.session.doc)
             .and_then(|bytes| self.services.print.as_ref().map_or(Ok(()), |print| print(&bytes)).map(|()| bytes.len()));
         match result {
             Ok(len) => {
@@ -767,8 +764,8 @@ impl WordApp {
 
     /// Media key of the selected picture, if any.
     pub(crate) fn selected_picture_media(&self) -> Option<String> {
-        match wordcraft_engine::cmd::objects::selected(&self.session) {
-            Some((_, wordcraft_doc::para::InlineObject::Image { media, .. })) => Some(media),
+        match woant_office_engine::cmd::objects::selected(&self.session) {
+            Some((_, woant_office_doc::para::InlineObject::Image { media, .. })) => Some(media),
             _ => None,
         }
     }
@@ -830,7 +827,7 @@ impl WordApp {
     fn default_save_name(&self) -> String {
         let ext = self.session.path.as_ref().and_then(|p| p.extension()).map(|e| e.to_string_lossy().to_string());
         match ext {
-            Some(e) if wordcraft_engine::io::is_word_package(&e) => format!("{}.{e}", self.title_stem()),
+            Some(e) if woant_office_engine::io::is_word_package(&e) => format!("{}.{e}", self.title_stem()),
             _ => format!("{}.docx", self.title_stem()),
         }
     }
@@ -1031,7 +1028,7 @@ impl WordApp {
         if let Some(url) = self.canvas.open_url.take() {
             ctx.open_url(egui::OpenUrl::new_tab(url));
         }
-        let title = format!("{}{} - WordCraft", self.title_stem(), if self.session.dirty { " •" } else { "" });
+        let title = format!("{}{} - Woant Office", self.title_stem(), if self.session.dirty { " •" } else { "" });
         if title != self.sent_title {
             ctx.send_viewport_cmd(egui::ViewportCommand::Title(title.clone()));
             self.sent_title = title;
@@ -1054,13 +1051,13 @@ impl WordApp {
             let sheet = [".xlsx", ".xlsm", ".ods"].iter().any(|e| lower.ends_with(e));
             let r = if sheet {
                 self.recipient_list_pending = false;
-                self.load_recipients(json!({"path": name, "data": wordcraft_engine::cmd::insert::base64_encode(&bytes)}))
+                self.load_recipients(json!({"path": name, "data": woant_office_engine::cmd::insert::base64_encode(&bytes)}))
             } else if list {
-                self.load_recipients(json!({"csv": wordcraft_engine::io::decode_text(&bytes)}))
+                self.load_recipients(json!({"csv": woant_office_engine::io::decode_text(&bytes)}))
             } else if img {
-                self.insert_or_change_picture(json!({"data": wordcraft_engine::cmd::insert::base64_encode(&bytes)}))
+                self.insert_or_change_picture(json!({"data": woant_office_engine::cmd::insert::base64_encode(&bytes)}))
             } else {
-                self.run("file.open", json!({"path": name, "data": wordcraft_engine::cmd::insert::base64_encode(&bytes)}))
+                self.run("file.open", json!({"path": name, "data": woant_office_engine::cmd::insert::base64_encode(&bytes)}))
             };
             if r.is_ok() {
                 self.ui.backstage = false;
@@ -1293,7 +1290,7 @@ mod tests {
     #[test]
     fn word_shortcuts_do_not_zoom_the_window() {
         let ctx = egui::Context::default();
-        let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), Services::default());
+        let mut app = WordApp::new(Session::new(woant_office_doc::Document::new()), Services::default());
         let mut frame = |events: Vec<egui::Event>| {
             let input = egui::RawInput { events, ..Default::default() };
             // No painter here: dropping the font atlas delta unapplied trips an epaint debug assertion.
@@ -1331,7 +1328,7 @@ mod tests {
     }
 
     fn app() -> WordApp {
-        WordApp::new(Session::new(wordcraft_doc::Document::new()), Services::default())
+        WordApp::new(Session::new(woant_office_doc::Document::new()), Services::default())
     }
 
     /// Insert › Icons (#309) opens the icon picker from the ribbon; an id inserts without it.
@@ -1369,7 +1366,7 @@ mod tests {
         assert!(a.dialog.is_none(), "settings apply without the dialog");
         let (tp, _, _) = a.session.sel.focus.path.cell().unwrap();
         let t = a.session.doc.table(a.session.sel.focus.story, &tp).unwrap();
-        assert_eq!(t.props.align, Some(wordcraft_doc::props::Align::Center));
+        assert_eq!(t.props.align, Some(woant_office_doc::props::Align::Center));
         assert_eq!((t.rows[0].props.height, t.rows[0].props.header), (Some(36.0), true));
         assert_eq!(dialogs::TableForm::read(&a).unwrap().changes(&f), json!({}), "the dialog reopens with the new values");
         // Table direction (#362) is one more setting of the same step.
@@ -1591,7 +1588,7 @@ mod tests {
     }
 
     fn body_text(a: &WordApp) -> String {
-        a.session.doc.plain_text(wordcraft_doc::StoryRef::Body)
+        a.session.doc.plain_text(woant_office_doc::StoryRef::Body)
     }
 
     fn prompt(a: &WordApp) -> Option<&'static str> {
@@ -1600,7 +1597,7 @@ mod tests {
 
     /// A fresh scratch folder for one test.
     fn scratch(name: &str) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("wordcraft-ui-{name}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("woant-office-ui-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
@@ -1609,7 +1606,7 @@ mod tests {
     /// A .docx on disk that the app didn't write.
     fn docx_on_disk(dir: &std::path::Path, text: &str) -> std::path::PathBuf {
         let path = dir.join("contract.docx");
-        let mut s = Session::new(wordcraft_doc::Document::from_text(text));
+        let mut s = Session::new(woant_office_doc::Document::from_text(text));
         s.run("file.save", &json!({"path": path.to_string_lossy()})).unwrap();
         path
     }
@@ -1651,7 +1648,7 @@ mod tests {
     fn password_protected_documents_ask_for_the_password() {
         let dir = scratch("password");
         let path = dir.join("locked.docx");
-        let mut s = Session::new(wordcraft_doc::Document::from_text("Locked away"));
+        let mut s = Session::new(woant_office_doc::Document::from_text("Locked away"));
         s.run("file.save", &json!({"path": path.to_string_lossy(), "password": "sesame"})).unwrap();
 
         let mut a = typed();
@@ -1927,14 +1924,15 @@ mod tests {
         h.step();
         h.event(key(egui::Key::Num1, egui::Modifiers::COMMAND | egui::Modifiers::ALT));
         h.step();
-        let style =
-            |h: &egui_kittest::Harness<WordApp>| h.state().session.doc.para_at(&wordcraft_doc::Pos::body(0, 0)).and_then(|p| p.props.style.clone());
+        let style = |h: &egui_kittest::Harness<WordApp>| {
+            h.state().session.doc.para_at(&woant_office_doc::Pos::body(0, 0)).and_then(|p| p.props.style.clone())
+        };
         assert_eq!(style(&h).as_deref(), Some("Heading1"));
         // Alt+F7 (next misspelling) can come with key text on some platforms; none is typed.
         h.event(key(egui::Key::F7, egui::Modifiers::ALT));
         h.event(egui::Event::Text("x".into()));
         h.step();
-        assert_eq!(h.state().session.doc.plain_text(wordcraft_doc::StoryRef::Body), "Kilns");
+        assert_eq!(h.state().session.doc.plain_text(woant_office_doc::StoryRef::Body), "Kilns");
     }
 
     /// Save writes the document first, then carries on with what the user asked for.
@@ -1950,8 +1948,8 @@ mod tests {
         a.run("ui.saveChanges", json!({"answer": "save"})).unwrap();
         assert_eq!(prompt(&a), None);
         assert_eq!(a.session.path, None, "the new document replaced the saved one");
-        let saved = wordcraft_engine::io::open_path(&path).unwrap();
-        assert!(saved.plain_text(wordcraft_doc::StoryRef::Body).contains("Revised Draft"));
+        let saved = woant_office_engine::io::open_path(&path).unwrap();
+        assert!(saved.plain_text(woant_office_doc::StoryRef::Body).contains("Revised Draft"));
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -2008,8 +2006,8 @@ mod tests {
             a.run("text.insert", json!({"text": "More "})).unwrap();
             a.autosave_tick(now_ms() + 10_000.0);
             assert!(!a.session.dirty, "{ext}: AutoSave wrote the file");
-            let saved = wordcraft_engine::io::open_path(&path).unwrap();
-            assert!(saved.plain_text(wordcraft_doc::StoryRef::Body).contains("More "), "{ext}");
+            let saved = woant_office_engine::io::open_path(&path).unwrap();
+            assert!(saved.plain_text(woant_office_doc::StoryRef::Body).contains("More "), "{ext}");
             let _ = std::fs::remove_dir_all(&dir);
         }
     }
@@ -2055,8 +2053,8 @@ mod tests {
         a.run("file.close", json!({})).unwrap();
         a.run("ui.saveChanges", json!({"answer": "save"})).unwrap();
         assert!(a.quit_requested);
-        let saved = wordcraft_engine::io::open_path(&path).unwrap();
-        assert!(saved.plain_text(wordcraft_doc::StoryRef::Body).contains(UNSAVED));
+        let saved = woant_office_engine::io::open_path(&path).unwrap();
+        assert!(saved.plain_text(woant_office_doc::StoryRef::Body).contains(UNSAVED));
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -2157,7 +2155,7 @@ mod tests {
             assert_eq!(prompt(&a), None);
             let saved = std::fs::read(&path).unwrap();
             assert!(
-                wordcraft_engine::io::open_path(&path).unwrap().plain_text(wordcraft_doc::StoryRef::Body).contains("Revised Again Signed"),
+                woant_office_engine::io::open_path(&path).unwrap().plain_text(woant_office_doc::StoryRef::Body).contains("Revised Again Signed"),
                 "{id}: Save wrote the document first"
             );
 
@@ -2223,7 +2221,7 @@ mod tests {
             let dir = scratch(&format!("mailings-redo-{}", id.len()));
             let path = docx_on_disk(&dir, "Signed contract");
             let copy = dir.join("copy.docx");
-            let on_file = |p: &std::path::Path| wordcraft_engine::io::open_path(p).unwrap().plain_text(wordcraft_doc::StoryRef::Body);
+            let on_file = |p: &std::path::Path| woant_office_engine::io::open_path(p).unwrap().plain_text(woant_office_doc::StoryRef::Body);
             let mut a = app();
             a.run("file.open", json!({"path": path.to_string_lossy()})).unwrap();
             a.run("mailings.recipients", json!({"csv": "Name\nAda"})).unwrap();
@@ -2266,8 +2264,8 @@ mod tests {
         assert!(a.session.dirty);
         a.autosave_tick(now_ms() + 10_000.0);
         assert!(!a.session.dirty);
-        let saved = wordcraft_engine::io::open_path(&path).unwrap();
-        assert!(saved.plain_text(wordcraft_doc::StoryRef::Body).contains("Typed More Original"));
+        let saved = woant_office_engine::io::open_path(&path).unwrap();
+        assert!(saved.plain_text(woant_office_doc::StoryRef::Body).contains("Typed More Original"));
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -2312,7 +2310,7 @@ mod tests {
     #[test]
     fn autosave_is_unavailable_in_the_browser() {
         let services = Services { download: Some(Box::new(|_: &str, _: &[u8]| Ok(()))), ..Default::default() };
-        let mut a = WordApp::new(Session::new(wordcraft_doc::Document::new()), services);
+        let mut a = WordApp::new(Session::new(woant_office_doc::Document::new()), services);
         a.run("text.insert", json!({"text": "Hello"})).unwrap();
         a.run("file.save", json!({"path": "draft.docx"})).unwrap();
         assert_eq!(a.autosave_block(), Some(AutoSaveBlock::Browser));
@@ -2336,8 +2334,8 @@ mod tests {
         a.run("text.insert", json!({"text": " continues"})).unwrap();
         a.autosave_tick(now_ms() + 10_000.0);
         assert!(!a.session.dirty);
-        let saved = wordcraft_engine::io::open_path(&path).unwrap();
-        assert!(saved.plain_text(wordcraft_doc::StoryRef::Body).contains("chapter continues"));
+        let saved = woant_office_engine::io::open_path(&path).unwrap();
+        assert!(saved.plain_text(woant_office_doc::StoryRef::Body).contains("chapter continues"));
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -2368,12 +2366,12 @@ mod tests {
     /// Web Save of an opened .docm downloads a .docm, so its macros stay (Codex review, docm lane).
     #[test]
     fn web_save_keeps_the_opened_word_format() {
-        let mut doc = wordcraft_doc::Document::new();
+        let mut doc = woant_office_doc::Document::new();
         doc.passthrough.insert("word/vbaProject.bin".into(), std::sync::Arc::new(vec![0xD0, 0xCF, 0x11, 0xE0, 1, 2, 3]));
         doc.passthrough.insert("word/vbaData.xml".into(), std::sync::Arc::new(b"<wne:vbaSuppData/>".to_vec()));
-        // The docx reader's list of parts the project relates to (wordcraft_docx VBA_RELATED).
+        // The docx reader's list of parts the project relates to (woant_office_docx VBA_RELATED).
         let related = "http://schemas.microsoft.com/office/2006/relationships/wordVbaData\tword/vbaData.xml\tapplication/vnd.ms-word.vbaData+xml\n";
-        doc.passthrough.insert("wordcraft:vbaProject.related".into(), std::sync::Arc::new(related.as_bytes().to_vec()));
+        doc.passthrough.insert("woant-office:vbaProject.related".into(), std::sync::Arc::new(related.as_bytes().to_vec()));
         let got: std::rc::Rc<std::cell::RefCell<Vec<(String, Vec<u8>)>>> = Default::default();
         let sink = got.clone();
         let services = Services {
@@ -2391,7 +2389,7 @@ mod tests {
             a.run("file.save", json!({})).unwrap();
             let (name, bytes) = got.borrow_mut().pop().unwrap();
             assert_eq!(name, expect);
-            let back = wordcraft_engine::io::open_bytes(&name, &bytes).unwrap();
+            let back = woant_office_engine::io::open_bytes(&name, &bytes).unwrap();
             let macros = name.to_ascii_lowercase().ends_with('m');
             for part in ["word/vbaProject.bin", "word/vbaData.xml"] {
                 assert_eq!(back.passthrough.contains_key(part), macros, "{opened}: {part}");
@@ -2402,7 +2400,7 @@ mod tests {
         a.run("file.saveAs", json!({"path": "m.docx"})).unwrap();
         let (name, bytes) = got.borrow_mut().pop().unwrap();
         assert_eq!(name, "m.docx");
-        assert!(!wordcraft_engine::io::open_bytes(&name, &bytes).unwrap().passthrough.contains_key("word/vbaProject.bin"));
+        assert!(!woant_office_engine::io::open_bytes(&name, &bytes).unwrap().passthrough.contains_key("word/vbaProject.bin"));
     }
 
     #[test]
@@ -2597,7 +2595,7 @@ mod tests {
     }
 
     fn insert_picture(a: &mut WordApp, c: [u8; 4]) {
-        let data = wordcraft_engine::cmd::insert::base64_encode(&png_bytes(c));
+        let data = woant_office_engine::cmd::insert::base64_encode(&png_bytes(c));
         a.session.run("insert.picture", &json!({"data": data})).unwrap();
     }
 
@@ -2727,11 +2725,11 @@ mod tests {
         a.run("mailings.rules", params).unwrap();
         assert!(a.dialog.is_none());
         let fields = |a: &WordApp| -> Vec<String> {
-            let (doc, body) = (&a.session.doc, wordcraft_doc::StoryRef::Body);
+            let (doc, body) = (&a.session.doc, woant_office_doc::StoryRef::Body);
             let paras = doc.para_paths(body).into_iter().filter_map(|p| doc.para(body, &p).cloned());
             paras
                 .flat_map(|p| p.objects)
-                .filter_map(|o| if let wordcraft_doc::para::InlineObject::Field { instr, .. } = o { Some(instr) } else { None })
+                .filter_map(|o| if let woant_office_doc::para::InlineObject::Field { instr, .. } = o { Some(instr) } else { None })
                 .collect()
         };
         assert_eq!(fields(&a), vec![r#"IF { MERGEFIELD City } = "London" "Local" "Away""#]);

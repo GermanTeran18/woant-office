@@ -16,7 +16,7 @@ other ~18 languages Word ships, plus native-speaker review (human).
 - **120 proofing tools** (`SharedSupport/Proofing Tools`): spellers for ~50 languages, grammar
   checkers for ~20, hyphenators for ~16, thesauri for ~20.
 
-## What WordCraft ships (measured)
+## What Woant Office ships (measured)
 
 - **12 interface languages**: English plus `zh-hans`, `zh-hant`, `ja`, `uk`, `es`, `pt-br`,
   Serbian `sr`/`sr-latn` (#250), Estonian `et`, Turkish `tr` and Russian `ru`. Catalogs have 1,305–1,450 entries

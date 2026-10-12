@@ -2,9 +2,9 @@
 //! Export writes UTF-8 with CRLF line ends; list paragraphs get their label and a tab, table
 //! cells are separated by tabs.
 
-use wordcraft_doc::Document;
+use woant_office_doc::Document;
 
-pub use wordcraft_doc::encoding::cp1252;
+pub use woant_office_doc::encoding::cp1252;
 
 use crate::model::{FBlock, ListCounter, from_doc};
 

@@ -61,7 +61,7 @@ font can't match Word's metrics.
 
 ## Performance
 
-| Measure | WordCraft | Word | Kind |
+| Measure | Woant Office | Word | Kind |
 |---|---|---|---|
 | Cold layout, 188-page document | 61 ms | not measured | measured 2026-10-06 (not re-run this pass) |
 | Relayout after an edit | 1.4 ms | not measured | measured 2026-10-06 |

@@ -3,7 +3,7 @@
 > **Last reviewed:** 2026-10-11 · **Last updated:** 2026-10-11 · **Change:** minor (pasted paragraph breaks: tracked under Track Changes, kept as text in lists, #417, #422; previously minor: Move Paragraph Up/Down, Promote/Demote, Go Back and Alt+X keys, #343) · **Target:** Microsoft Word (Microsoft 365) for Mac 16.113.4
 
 What Word does when you type, observed black-box (same keystrokes typed into Word and
-WordCraft, results read back paragraph by paragraph) and pinned by tests in
+Woant Office, results read back paragraph by paragraph) and pinned by tests in
 `crates/engine/src/tests_typing.rs`. When typing behaviour changes, change it here and in the
 tests together. Line breaking and pagination are in [`layout-parity.md`](layout-parity.md); the
 overall picture is in [`target-app-parity.md`](target-app-parity.md).
@@ -94,7 +94,7 @@ Applied when a word is finished by a space, punctuation **or Enter** (`enter_fin
 
 ## How to compare
 
-- WordCraft: the headless `ui_shot` example (no window, no focus) with `UI_SHOT_FULL=1` prints
+- Woant Office: the headless `ui_shot` example (no window, no focus) with `UI_SHOT_FULL=1` prints
   the whole `document.inspect`; drive it with `ui.text` / `ui.key` lines so keys take the real
   input path.
 - Word: the machine is shared. Prefer AppleScript that doesn't take focus (open, read

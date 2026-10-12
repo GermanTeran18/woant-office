@@ -1,7 +1,7 @@
-//! Headless UI screenshots: renders the whole WordCraft window offscreen (wgpu), so it works
+//! Headless UI screenshots: renders the whole Woant Office window offscreen (wgpu), so it works
 //! with a locked screen or a hidden window.
 //!
-//! `cargo run -p wordcraft-ui-egui --example ui_shot -- script.jsonl`
+//! `cargo run -p woant-office-ui-egui --example ui_shot -- script.jsonl`
 //!
 //! The script is JSON lines: control-channel requests (`{"method": …, "params": …}`, see
 //! `docs/control-protocol.md`), `{"shot": "/abs/out.png"}` to save the window as PNG, or
@@ -9,8 +9,8 @@
 //! background work such as a Zotero session). The window is 1440×900 pt at 2× and opens the sample
 //! document unless the first line is `{"empty": true}`.
 
-use wordcraft_engine::Session;
-use wordcraft_ui_egui::{ControlRequest, Services, WordApp};
+use woant_office_engine::Session;
+use woant_office_ui_egui::{ControlRequest, Services, WordApp};
 
 static READY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
@@ -21,9 +21,9 @@ fn main() {
     let lines: Vec<serde_json::Value> =
         script.lines().filter(|l| !l.trim().is_empty()).map(|l| serde_json::from_str(l).expect("json line")).collect();
     let doc = if lines.first().is_some_and(|l| l.get("empty").is_some()) {
-        wordcraft_doc::Document::new()
+        woant_office_doc::Document::new()
     } else {
-        wordcraft_engine::sample::sample_document()
+        woant_office_engine::sample::sample_document()
     };
     let mut app = WordApp::new(Session::new(doc), Services::default()).with_control(rx);
     app.integrated_titlebar = true;

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Woant Office MSI (WiX Toolset v5: `dotnet tool install -g wix`, plus its UI and Util extensions:
+  `wix extension add -g WixToolset.UI.wixext/5.0.2` and the same for WixToolset.Util.wixext).
+  Built by package.ps1:
+
+    wix build woant-office.wxs -arch x64 -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext
+      -d Version=1.2.3 -d BinDir=... -d IconPath=... -d LicenseRtf=... -o out.msi
+
+  Per-machine install into Program Files with a Start Menu shortcut. The installer shows the
+  standard WiX dialogs: welcome + license, progress, and a finish page.
+
+  UpgradeCode and the component GUIDs below belong to Woant Office alone. Never copy them from (or
+  into) a sibling Craft app: Windows Installer treats every package sharing an UpgradeCode as one
+  product, so a shared code makes one app's installer refuse to install ("a newer version is
+  already installed") or silently uninstall the other. packaging-lint.yml checks this.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package
+      Name="Woant Office"
+      Manufacturer="Learning Machines LLC"
+      Version="$(var.Version)"
+      UpgradeCode="075497F9-E861-45D0-9C7F-A74F8C34E6BA"
+      Scope="perMachine"
+      Compressed="yes"
+      Language="1033">
+    <SummaryInformation Description="Woant Office word processor" Manufacturer="Learning Machines LLC" />
+    <!-- Same-version upgrades let successive pre-releases of one X.Y.Z replace each other
+         (MSI versions are numeric, so 1.2.3-rc.1 and 1.2.3-rc.2 are both 1.2.3). -->
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="A newer version of Woant Office is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="Woant OfficeIcon.ico" SourceFile="$(var.IconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="Woant OfficeIcon.ico" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/GermanTeran18/woant-office" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://github.com/GermanTeran18/woant-office" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/GermanTeran18/woant-office/issues" />
+
+    <!-- Installer UI (#198): WixUI_Minimal is welcome + license, progress, then a finish page so
+         people can see the install worked. Its dialogs and bitmaps are WiX's own
+         (WixToolset.UI.wixext); package.ps1 builds the license RTF from LICENSE-MIT and
+         LICENSE-APACHE. The finish page offers to launch Woant Office (ticked by default) through
+         WixShellExec (WixToolset.Util.wixext); silent installs (/qn) never show it. -->
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseRtf)" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Woant Office" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+    <Property Id="WixShellExecTarget" Value="[#Woant OfficeExe]" />
+    <CustomAction Id="LaunchWoant Office" BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)" DllEntry="WixShellExec"
+        Impersonate="yes" Return="ignore" />
+    <UI>
+      <ui:WixUI Id="WixUI_Minimal" />
+      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchWoant Office"
+          Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed" />
+    </UI>
+
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLFOLDER" Name="Woant Office" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <Feature Id="Main" Title="Woant Office" Level="1">
+      <ComponentGroupRef Id="Woant OfficeFiles" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="Woant OfficeFiles" Directory="INSTALLFOLDER">
+      <Component Id="Woant OfficeApp" Guid="855DCEC6-9285-444F-9382-9654B83B34F6">
+        <File Id="Woant OfficeExe" Source="$(var.BinDir)\woant-office.exe" KeyPath="yes">
+          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Woant Office"
+              Description="Woant Office word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+              Icon="Woant OfficeIcon.ico" IconIndex="0" />
+        </File>
+
+        <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\woant-office.exe" Value="[#Woant OfficeExe]" Type="string" />
+      </Component>
+
+      <Component Id="Woant OfficeCli">
+        <File Id="Woant OfficeCliExe" Source="$(var.BinDir)\woant-office-cli.exe" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

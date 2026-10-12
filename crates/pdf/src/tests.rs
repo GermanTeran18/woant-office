@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use wordcraft_doc::para::InlineObject;
-use wordcraft_doc::props::NumRef;
-use wordcraft_doc::{Block, CharProps, Document, ListKind, Paragraph, Table, Watermark, para_block};
+use woant_office_doc::para::InlineObject;
+use woant_office_doc::props::NumRef;
+use woant_office_doc::{Block, CharProps, Document, ListKind, Paragraph, Table, Watermark, para_block};
 
 use crate::*;
 
@@ -26,7 +26,7 @@ fn sample() -> Document {
     let n = h1.len();
     h1.insert_object(n, InlineObject::BookmarkStart { name: "intro".into() }, &CharProps::default()).unwrap();
     b.push(para_block(h1));
-    let mut p = Paragraph::with_text("Hello WordCraft, ", CharProps::default());
+    let mut p = Paragraph::with_text("Hello Woant Office, ", CharProps::default());
     let n = p.len();
     p.insert_text(n, "bold words", &CharProps { bold: Some(true), ..Default::default() }).unwrap();
     let n = p.len();
@@ -69,7 +69,7 @@ fn sample() -> Document {
     b.push(para_block(big));
     b.push(para_block(Paragraph::with_text(
         "Dotted and wavy",
-        CharProps { underline: Some(wordcraft_doc::props::Underline::Wave), ..Default::default() },
+        CharProps { underline: Some(woant_office_doc::props::Underline::Wave), ..Default::default() },
     )));
     d.body = b;
     d.settings.watermark = Some(Watermark::default());
@@ -138,7 +138,7 @@ fn exports_pages_text_and_structure() {
     let all = squash(&text.concat());
     for w in [
         "Introduction",
-        "Hello WordCraft,",
+        "Hello Woant Office,",
         "bold words",
         "website",
         "Details",
@@ -151,7 +151,7 @@ fn exports_pages_text_and_structure() {
     ] {
         assert!(all.contains(w), "{w:?} missing from {all:?}");
     }
-    assert!(squash(&text[0]).contains("Hello WordCraft, bold words and a website back to top"), "{:?}", text[0]);
+    assert!(squash(&text[0]).contains("Hello Woant Office, bold words and a website back to top"), "{:?}", text[0]);
 
     let raw = String::from_utf8_lossy(&export(&d, &PdfOptions { compress: false, ..Default::default() }).unwrap()).into_owned();
     assert!(raw.contains("/FontFile2") || raw.contains("/FontFile3"), "embedded fonts");
@@ -219,7 +219,7 @@ fn hostile_documents_export() {
 
 #[test]
 fn tracked_deletions_are_left_out_without_markup() {
-    use wordcraft_doc::{Revision, RevisionKind};
+    use woant_office_doc::{Revision, RevisionKind};
     let mut d = Document::new();
     d.revisions.push(Revision { kind: RevisionKind::Delete, author: "Ada".into(), date: String::new(), move_name: None });
     d.revisions.push(Revision { kind: RevisionKind::Insert, author: "Ada".into(), date: String::new(), move_name: None });
@@ -239,7 +239,7 @@ fn tracked_deletions_are_left_out_without_markup() {
 
 #[test]
 fn deleted_heading_text_stays_out_of_bookmarks_and_tags() {
-    use wordcraft_doc::{Revision, RevisionKind};
+    use woant_office_doc::{Revision, RevisionKind};
     let mut d = Document::new();
     d.revisions.push(Revision { kind: RevisionKind::Delete, author: "Ada".into(), date: String::new(), move_name: None });
     let del = CharProps { del: Some(0), ..Default::default() };
@@ -267,10 +267,10 @@ fn deleted_heading_text_stays_out_of_bookmarks_and_tags() {
 fn hidden_heading_text_stays_out_of_bookmarks_and_tags() {
     let mut d = Document::new();
     // Hidden text both directly and through a character style.
-    d.styles.upsert(wordcraft_doc::Style {
+    d.styles.upsert(woant_office_doc::Style {
         id: "Secret".into(),
         name: "Secret".into(),
-        kind: wordcraft_doc::StyleKind::Character,
+        kind: woant_office_doc::StyleKind::Character,
         chr: CharProps { hidden: Some(true), ..Default::default() },
         ..Default::default()
     });
@@ -311,7 +311,7 @@ fn long_fragmented_hidden_headings_export_in_linear_time() {
             h.runs = (0..n)
                 .map(|i| {
                     let hidden = !(visible_every_other && i % 2 == 1);
-                    wordcraft_doc::Run { len: 1, props: CharProps { hidden: Some(hidden), bold: Some(i % 4 < 2), ..Default::default() } }
+                    woant_office_doc::Run { len: 1, props: CharProps { hidden: Some(hidden), bold: Some(i % 4 < 2), ..Default::default() } }
                 })
                 .collect();
             para_block(h)
@@ -349,11 +349,11 @@ fn table_style_hidden_heading_text_stays_out_of_bookmarks_and_tags() {
     // Hidden by the table style's header row, so only the layout's resolution (table conditional
     // formatting under the runs' own) says the text is hidden.
     let mut d = Document::new();
-    d.styles.upsert(wordcraft_doc::Style {
+    d.styles.upsert(woant_office_doc::Style {
         id: "SecretHeader".into(),
         name: "Secret Header".into(),
-        kind: wordcraft_doc::StyleKind::Table,
-        table: Some(wordcraft_doc::styles::TableStyleParts {
+        kind: woant_office_doc::StyleKind::Table,
+        table: Some(woant_office_doc::styles::TableStyleParts {
             header_chr: CharProps { hidden: Some(true), ..Default::default() },
             ..Default::default()
         }),
@@ -418,7 +418,7 @@ fn fields_put_their_shown_text_in_the_text_layer() {
     f.insert_object(5, field("PAGE"), &CharProps::default()).unwrap();
     let n = f.len();
     f.insert_object(n, field("NUMPAGES"), &CharProps::default()).unwrap();
-    let id = d.add_part(wordcraft_doc::PartKind::Footer, vec![para_block(f)]);
+    let id = d.add_part(woant_office_doc::PartKind::Footer, vec![para_block(f)]);
     d.last_section.footers.default = Some(id);
     let mut body = Paragraph::with_text("Body", CharProps::default());
     body.props.page_break_before = None;
@@ -434,7 +434,7 @@ fn fields_put_their_shown_text_in_the_text_layer() {
 /// Bundled Source Sans 3 renamed to `family`, with glyph `gid` turned into a composite glyph whose
 /// component list is cut off: fonts still parse and shape, but krilla's subsetter rejects it.
 fn unsubsettable_font(family: &str, gid: u16) -> Vec<u8> {
-    let mut f = wordcraft_fonts::bundled()[0].to_vec();
+    let mut f = woant_office_fonts::bundled()[0].to_vec();
     let rename = |f: &mut Vec<u8>, from: &[u8], to: &[u8]| {
         let mut i = 0;
         while i + from.len() <= f.len() {
@@ -506,7 +506,7 @@ fn count_glyphs_and_paths(bytes: &[u8]) -> (usize, usize) {
 
 #[test]
 fn unsubsettable_font_is_drawn_as_outlines() {
-    let db = wordcraft_fonts::FontDb::global();
+    let db = woant_office_fonts::FontDb::global();
     let o = db.face("Source Sans 3", "Regular").glyph_for('o');
     let family = "Broken Sans 3";
     db.add_font(unsubsettable_font(family, u16::try_from(o).unwrap()));
@@ -555,8 +555,8 @@ fn field_result_ligatures_extract_all_their_letters() {
     // Source Sans 3 joins "fi" and "ffi", so this doesn't depend on the installed fonts.
     let font = CharProps { font: Some("Source Sans 3".into()), ..Default::default() };
     let result = "the first office";
-    let face = wordcraft_fonts::FontDb::global().face("Source Sans 3", "Regular");
-    assert!(wordcraft_fonts::shape(&face, result, &[], |c| c).len() < result.chars().count(), "the result has ligatures");
+    let face = woant_office_fonts::FontDb::global().face("Source Sans 3", "Regular");
+    assert!(woant_office_fonts::shape(&face, result, &[], |c| c).len() < result.chars().count(), "the result has ligatures");
     let mut d = Document::new();
     let mut p = Paragraph::with_text("See  here.", font.clone());
     p.insert_object(4, InlineObject::Field { instr: " REF _RefTarget \\h ".into(), result: result.into(), locked: false, code: false }, &font)
@@ -581,7 +581,7 @@ fn synthetic_bold_text_is_extracted_once() {
 fn turned_cell_text_exports_as_text() {
     // Table Layout › Text Direction (#226): turned cell text is drawn in a turned frame and
     // stays real text in the PDF.
-    for dir in [wordcraft_doc::props::TextDirection::Down, wordcraft_doc::props::TextDirection::Up] {
+    for dir in [woant_office_doc::props::TextDirection::Down, woant_office_doc::props::TextDirection::Up] {
         let mut t = Table::new(1, 2, 300.0);
         t.rows[0].cells[0].blocks = vec![para_block(Paragraph::with_text("Turned", CharProps::default()))];
         t.rows[0].cells[0].props.text_direction = dir;
@@ -594,8 +594,8 @@ fn turned_cell_text_exports_as_text() {
 
 #[test]
 fn inline_chart_is_a_figure_with_its_text_inside_it() {
-    use wordcraft_doc::graphic::{Graphic, GraphicItem, GraphicKind, TextAlign};
-    use wordcraft_doc::props::Rgb;
+    use woant_office_doc::graphic::{Graphic, GraphicItem, GraphicKind, TextAlign};
+    use woant_office_doc::props::Rgb;
     let items = vec![GraphicItem::Text {
         rect: [0.0, 0.0, 216.0, 20.0],
         text: "Q1".into(),
@@ -608,7 +608,7 @@ fn inline_chart_is_a_figure_with_its_text_inside_it() {
     let graphic = Graphic { kind: GraphicKind::Chart, items, ..Default::default() };
     let obj = InlineObject::Graphic { w: 216.0, h: 144.0, alt: "Sales by quarter".into(), float: Default::default(), graphic: Arc::new(graphic) };
     let mut d = Document::from_text("Chart");
-    d.insert_object(&wordcraft_doc::Pos::body(0, 0), obj, &Default::default()).unwrap();
+    d.insert_object(&woant_office_doc::Pos::body(0, 0), obj, &Default::default()).unwrap();
     let raw = |tagged| String::from_utf8_lossy(&export(&d, &PdfOptions { tagged, compress: false, ..Default::default() }).unwrap()).into_owned();
     assert!(raw(true).contains("/Figure"), "tagged chart is a figure");
     assert!(!raw(false).contains("/Figure"));
@@ -616,13 +616,13 @@ fn inline_chart_is_a_figure_with_its_text_inside_it() {
 
 #[test]
 fn chart_without_alt_text_is_a_figure_called_chart() {
-    use wordcraft_doc::graphic::{Graphic, GraphicItem, GraphicKind, PathSeg};
+    use woant_office_doc::graphic::{Graphic, GraphicItem, GraphicKind, PathSeg};
     let segs = vec![PathSeg::Move(1.0, 1.0), PathSeg::Line(50.0, 50.0)];
-    let items = vec![GraphicItem::Path { segs, fill: None, stroke: Some(wordcraft_doc::props::Rgb::BLACK), stroke_width: 1.0 }];
+    let items = vec![GraphicItem::Path { segs, fill: None, stroke: Some(woant_office_doc::props::Rgb::BLACK), stroke_width: 1.0 }];
     let graphic = Graphic { kind: GraphicKind::Chart, items, ..Default::default() };
     let obj = InlineObject::Graphic { w: 216.0, h: 144.0, alt: String::new(), float: Default::default(), graphic: Arc::new(graphic) };
     let mut d = Document::from_text("Chart");
-    d.insert_object(&wordcraft_doc::Pos::body(0, 0), obj, &Default::default()).unwrap();
+    d.insert_object(&woant_office_doc::Pos::body(0, 0), obj, &Default::default()).unwrap();
     let raw = String::from_utf8_lossy(&export(&d, &PdfOptions { tagged: true, compress: false, ..Default::default() }).unwrap()).into_owned();
     assert!(raw.contains("/Alt(chart)"), "no chart alt text");
     assert!(!raw.contains("/Alt(picture)"));

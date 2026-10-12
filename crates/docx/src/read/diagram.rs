@@ -1,9 +1,9 @@
 //! SmartArt diagrams: the ready-made drawing (`dsp:drawing`) Word keeps beside the diagram data,
 //! converted to [`GraphicItem`]s. The diagram's layout isn't run; the saved drawing is the picture.
 
-use wordcraft_doc::graphic::{GraphicItem, PathSeg, TextAlign};
-use wordcraft_doc::para::ShapeKind;
-use wordcraft_doc::props::Rgb;
+use woant_office_doc::graphic::{GraphicItem, PathSeg, TextAlign};
+use woant_office_doc::para::ShapeKind;
+use woant_office_doc::props::Rgb;
 
 use super::Reader;
 use super::chart::text_w;
@@ -534,7 +534,7 @@ impl Reader<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wordcraft_doc::THEME_COLORS;
+    use woant_office_doc::THEME_COLORS;
 
     const NS: &str = r#"xmlns:dsp="http://schemas.microsoft.com/office/drawing/2008/diagram" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships""#;
 

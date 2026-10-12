@@ -207,7 +207,7 @@ mod tests {
 
     use super::*;
     use crate::Services;
-    use wordcraft_engine::Session;
+    use woant_office_engine::Session;
 
     const UNSAVED: &str = "My unsaved novel chapter";
 
@@ -226,7 +226,7 @@ mod tests {
             })),
             ..Default::default()
         };
-        (WordApp::new(Session::new(wordcraft_doc::Document::new()), services), shown)
+        (WordApp::new(Session::new(woant_office_doc::Document::new()), services), shown)
     }
 
     /// Answer the dialog the host is showing (the last one asked for).
@@ -241,18 +241,18 @@ mod tests {
     }
 
     fn body_text(a: &WordApp) -> String {
-        a.session.doc.plain_text(wordcraft_doc::StoryRef::Body)
+        a.session.doc.plain_text(woant_office_doc::StoryRef::Body)
     }
 
     fn scratch(name: &str) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("wordcraft-ui-dialogs-{name}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("woant-office-ui-dialogs-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
     }
 
     fn saved_text(path: &std::path::Path) -> String {
-        wordcraft_engine::io::open_path(path).unwrap().plain_text(wordcraft_doc::StoryRef::Body)
+        woant_office_engine::io::open_path(path).unwrap().plain_text(woant_office_doc::StoryRef::Body)
     }
 
     /// Save As returns at once (the UI keeps running); the frame loop saves once the answer arrives.

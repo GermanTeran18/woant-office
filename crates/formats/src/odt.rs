@@ -16,7 +16,7 @@ use std::io::{Cursor, Read, Write};
 
 use quick_xml::XmlVersion;
 use quick_xml::events::{BytesStart, Event};
-use wordcraft_doc::{Align, Document, Rgb};
+use woant_office_doc::{Align, Document, Rgb};
 
 use crate::model::{self, Cell, FBlock, FTable, Flow, Fmt, Inline, Kind, ListInfo, Meta, Para, make_img, mime_of};
 
@@ -478,7 +478,7 @@ impl Writer {
     }
 }
 
-fn styles_xml(sec: &wordcraft_doc::SectionProps, body_font: &str) -> String {
+fn styles_xml(sec: &woant_office_doc::SectionProps, body_font: &str) -> String {
     let mut s = format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-styles {NS}><office:styles>");
     s.push_str(&format!(
         "<style:default-style style:family=\"paragraph\"><style:paragraph-properties fo:margin-bottom=\"8pt\"/><style:text-properties fo:font-family=\"'{}'\" fo:font-size=\"12pt\"/></style:default-style>",
@@ -514,7 +514,7 @@ fn styles_xml(sec: &wordcraft_doc::SectionProps, body_font: &str) -> String {
 
 fn meta_xml(m: &Meta) -> String {
     let mut s =
-        format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-meta {NS}><office:meta><meta:generator>WordCraft</meta:generator>");
+        format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-meta {NS}><office:meta><meta:generator>Woant Office</meta:generator>");
     if !m.title.is_empty() {
         s.push_str(&format!("<dc:title>{}</dc:title>", x(&m.title)));
     }
@@ -547,7 +547,7 @@ pub fn export(doc: &Document) -> Result<Vec<u8>, String> {
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-content {NS}>{}<office:body><office:text>\n{body}</office:text></office:body></office:document-content>\n",
         w.automatic_styles()
     );
-    let body_font = doc.styles.default_chr.font.clone().unwrap_or_else(|| wordcraft_doc::styles::BODY_FONT.to_string());
+    let body_font = doc.styles.default_chr.font.clone().unwrap_or_else(|| woant_office_doc::styles::BODY_FONT.to_string());
     let styles = styles_xml(&doc.last_section, &body_font);
     let meta = meta_xml(&flow.meta);
     let mut manifest = String::from(
@@ -1253,7 +1253,7 @@ impl Body<'_> {
             "table-row" => {
                 if let Some(t) = self.tables.last_mut() {
                     let r = std::mem::take(&mut t.row);
-                    if !r.is_empty() && t.rows.len() < wordcraft_doc::table::MAX_ROWS {
+                    if !r.is_empty() && t.rows.len() < woant_office_doc::table::MAX_ROWS {
                         t.rows.push(r);
                     }
                 }

@@ -1,8 +1,8 @@
 //! Undo, clipboard, find & replace, Go To, Format Painter.
 
 use serde_json::{Value, json};
-use wordcraft_doc::edit::Fragment;
-use wordcraft_doc::{Pos, StoryRef};
+use woant_office_doc::edit::Fragment;
+use woant_office_doc::{Pos, StoryRef};
 
 use super::{delete_selection, pos_json, sel_result};
 use crate::{CmdError, CmdResult, CommandSpec, Selection, Session, p};
@@ -157,7 +157,7 @@ pub struct ClipItem {
 impl ClipItem {
     /// One line of the item's text for a list: whitespace runs become one space, objects drop out.
     pub fn preview(&self) -> String {
-        let words = self.text.split(|c: char| c.is_whitespace() || c == wordcraft_doc::para::OBJ).filter(|w| !w.is_empty());
+        let words = self.text.split(|c: char| c.is_whitespace() || c == woant_office_doc::para::OBJ).filter(|w| !w.is_empty());
         let mut out = String::new();
         let mut n = 0;
         for w in words {
@@ -225,7 +225,7 @@ impl ClipHistory {
                         "index": i,
                         "preview": it.preview(),
                         "chars": it.text.chars().count(),
-                        "objects": it.text.matches(wordcraft_doc::para::OBJ).count(),
+                        "objects": it.text.matches(woant_office_doc::para::OBJ).count(),
                     })
                 })
                 .collect(),
@@ -469,7 +469,7 @@ fn goto(s: &mut Session, v: &Value) -> CmdResult {
         let idx = (pg.max(1) as usize - 1).min(l.pages.len().saturating_sub(1));
         let target = l.pages.get(idx).and_then(|page| {
             page.items.iter().find_map(|it| match it {
-                wordcraft_layout::Placed::Lines { story, path, para, l0, .. } if *story == StoryRef::Body => {
+                woant_office_layout::Placed::Lines { story, path, para, l0, .. } if *story == StoryRef::Body => {
                     para.lines.get(*l0).map(|ln| Pos { story: *story, path: path.clone(), off: ln.start })
                 }
                 _ => None,

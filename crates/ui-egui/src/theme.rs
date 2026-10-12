@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use egui::{Align2, Color32, CornerRadius, FontData, FontDefinitions, FontFamily, FontId, Rect, Stroke, Visuals};
 
-/// WordCraft's app colour (and its darker ink for text on light backgrounds).
+/// Woant Office's app colour (and its darker ink for text on light backgrounds).
 pub const APP_COLOR: Color32 = Color32::from_rgb(0x3B, 0x5B, 0xDB);
 pub const APP_INK: Color32 = Color32::from_rgb(0x2B, 0x47, 0xB5);
 
@@ -306,7 +306,7 @@ pub fn font_definitions(prefer_hans: bool, system_cjk: bool) -> FontDefinitions 
             }
         }
     };
-    let cjk = wordcraft_fonts::ui_cjk_fonts(prefer_hans);
+    let cjk = woant_office_fonts::ui_cjk_fonts(prefer_hans);
     for f in &cjk {
         // The same static bytes the document fonts use: one copy in the binary.
         add_cjk(&mut fonts, format!("{} {}", f.family, f.style), FontData::from_static(f.bytes));
@@ -331,22 +331,22 @@ pub fn font_definitions(prefer_hans: bool, system_cjk: bool) -> FontDefinitions 
 /// ([`cjk_font_text`](crate::i18n::Lang::cjk_font_text)). The font is picked for the catalogs'
 /// missing characters, or for the language names when only those are missing.
 #[cfg(not(target_arch = "wasm32"))]
-fn system_cjk_font(hans: bool) -> Option<&'static wordcraft_fonts::SystemUiFont> {
-    static ZH: std::sync::OnceLock<Option<wordcraft_fonts::SystemUiFont>> = std::sync::OnceLock::new();
-    static OTHER: std::sync::OnceLock<Option<wordcraft_fonts::SystemUiFont>> = std::sync::OnceLock::new();
+fn system_cjk_font(hans: bool) -> Option<&'static woant_office_fonts::SystemUiFont> {
+    static ZH: std::sync::OnceLock<Option<woant_office_fonts::SystemUiFont>> = std::sync::OnceLock::new();
+    static OTHER: std::sync::OnceLock<Option<woant_office_fonts::SystemUiFont>> = std::sync::OnceLock::new();
     (if hans { &ZH } else { &OTHER })
         .get_or_init(|| {
-            let embedded = wordcraft_fonts::ui_cjk_fonts(hans);
+            let embedded = woant_office_fonts::ui_cjk_fonts(hans);
             let (catalogs, names) = crate::i18n::Lang::cjk_font_text(hans);
-            let mut needed = wordcraft_fonts::ui_uncovered_cjk(&catalogs, &embedded);
+            let mut needed = woant_office_fonts::ui_uncovered_cjk(&catalogs, &embedded);
             if needed.is_empty() {
-                needed = wordcraft_fonts::ui_uncovered_cjk(&[&names], &embedded);
+                needed = woant_office_fonts::ui_uncovered_cjk(&[&names], &embedded);
                 if needed.is_empty() {
                     return None;
                 }
             }
             log::debug!("interface: {} CJK characters lack an embedded glyph", needed.len());
-            wordcraft_fonts::system_cjk_ui_font(hans, &needed)
+            woant_office_fonts::system_cjk_ui_font(hans, &needed)
         })
         .as_ref()
 }
@@ -502,7 +502,7 @@ fn visuals(t: &Tokens) -> Visuals {
     v
 }
 
-pub fn c32(c: wordcraft_doc::Rgb) -> Color32 {
+pub fn c32(c: woant_office_doc::Rgb) -> Color32 {
     Color32::from_rgb(c.0, c.1, c.2)
 }
 

@@ -10,15 +10,15 @@
 # Clean room: every entry was written from the plain meaning of the English label in ordinary
 # computing vocabulary. No Microsoft Word (or other product) localisation, string table or
 # translated UI was consulted or copied; add entries the same way.
-# Product, format and technology names (WordCraft, PDF, Markdown, MCP …) stay in Latin letters.
+# Product, format and technology names (Woant Office, PDF, Markdown, MCP …) stay in Latin letters.
 # Counts use count-neutral wording (`Слов: 21`), so no plural forms are needed.
 
 	(no suggestions)	(нет вариантов)
 	1.5 Line Spacing	Полуторный интервал
-	A free, open-source word processor written from scratch in Rust.\nPart of the Crafting Apps from the ArtCraft team.	Бесплатный текстовый процессор с открытым исходным кодом, написанный с нуля на Rust.\nВходит в Crafting Apps от команды ArtCraft.
+	A free, open-source word processor written from scratch in Rust.\nA fork of WordCraft.	Бесплатный текстовый процессор с открытым исходным кодом, написанный с нуля на Rust.\nФорк WordCraft.
 	AaBbCcDd	АаБбВвГг
 	About	О программе
-	About WordCraft	О WordCraft
+	About Woant Office	О Woant Office
 	Accept	Принять
 	Accept All Changes	Принять все изменения
 	Accept This Change	Принять это изменение
@@ -143,7 +143,6 @@
 	Comment	Комментарий
 	Comments	Комментарии
 	Comments Pane	Область комментариев
-	Community\nDiscord	Сообщество\nDiscord
 	Compact	Компактный
 	Compare	Сравнить
 	Compress Pictures	Сжать рисунки
@@ -195,8 +194,6 @@
 	Dictate	Диктовка
 	Different First Page	Особая первая страница
 	Different Odd & Even Pages	Разные для чётных и нечётных страниц
-	Discord	Discord
-	Discord community	Сообщество в Discord
 	Display	Отображение
 	Display for Review	Отображение исправлений
 	Distribute Columns	Выровнять ширину столбцов
@@ -246,7 +243,7 @@
 	Equation	Уравнение
 	Eraser	Ластик
 	Even Page	Чётная страница
-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Любая команда доступна скриптам и ИИ-агентам: запустите `wordcraft-cli mcp`, чтобы получить MCP-сервер, или запустите приложение с `--control <port>`, чтобы открыть управляющий канал JSON.
+	Every command is available to scripts and AI agents: run `woant-office-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Любая команда доступна скриптам и ИИ-агентам: запустите `woant-office-cli mcp`, чтобы получить MCP-сервер, или запустите приложение с `--control <port>`, чтобы открыть управляющий канал JSON.
 	Export	Экспорт
 	Export a copy to share (PDF, Word document)	Экспортировать копию, чтобы поделиться (PDF, документ Word)
 	Export Page as PNG	Экспортировать страницу в PNG
@@ -365,8 +362,6 @@
 	Intense Reference	Сильная ссылка
 	Interface language:	Язык интерфейса:
 	Italic	Курсив
-	Join the ArtCraft community on Discord	Присоединяйтесь к сообществу ArtCraft в Discord
-	Join us on Discord: discord.gg/artcraft	Присоединяйтесь к нам в Discord: discord.gg/artcraft
 	Justify	По ширине
 	Keep Lines Together	Не разрывать абзац
 	Keep lines together	Не разрывать абзац
@@ -659,7 +654,6 @@
 	Show Markup	Показать исправления
 	Show Notes	Показать сноски
 	Show rulers	Показывать линейки
-	Show the community button in the title bar	Показывать кнопку сообщества в заголовке окна
 	Show/Hide ¶	Показать/скрыть ¶
 	Show\nComments	Показать\nкомментарии
 	Shrink Font 1 Point	Уменьшить шрифт на 1 пт
@@ -674,7 +668,7 @@
 	Small caps	Малые прописные
 	SmartArt	SmartArt
 	Sort	Сортировка
-	Source code: github.com/storytold/wordcraft	Исходный код: github.com/storytold/wordcraft
+	Source code: github.com/GermanTeran18/woant-office	Исходный код: github.com/GermanTeran18/woant-office
 	Space before/after:	Интервал перед/после:
 	Spacing	Интервал
 	Spacing (pt):	Интервал (пт):
@@ -811,7 +805,7 @@ preview	Title	Пример
 	Word Left	На слово влево
 	Word Right	На слово вправо
 	WordArt	WordArt
-	WordCraft	WordCraft
+	Woant Office	Woant Office
 	Words	Слова
 	Words only	Только слова
 	Wrap Text	Обтекание текстом
@@ -829,7 +823,7 @@ preview	Title	Пример
 	Only web (http, https) and email (mailto) links can be followed	Переходить можно только по веб-ссылкам (http, https) и ссылкам на электронную почту (mailto)
 
 	Apply Styles	Применить стили
-	AutoSave documents you have saved in WordCraft	Автосохранение документов, уже сохранённых в WordCraft
+	AutoSave documents you have saved in Woant Office	Автосохранение документов, уже сохранённых в Woant Office
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Ошибка автосохранения: {error}. Сохраните документ, чтобы снова включить автосохранение.
 	Bottom Margin	Нижнее поле
 	Edit Comment	Изменить комментарий
@@ -1079,7 +1073,6 @@ preview	Title	Пример
 	Insert a new equation (Alt+=)	Вставить новое уравнение (Alt+=)
 	Leave the equation (Esc)	Выйти из уравнения (Esc)
 	Preview	Предварительный просмотр
-	getartcraft.com/apps/wordcraft	getartcraft.com/apps/wordcraft
 	Browse…	Обзор…
 
 # Equation gallery, themes, watermarks, paper sizes, table styles and other strings the
@@ -1524,7 +1517,7 @@ preview	Title	Пример
 	The document will be saved with a password. Save it to protect it.	Документ будет сохранён с паролем. Сохраните его, чтобы защитить.
 	The password is removed. Save the document to keep the change.	Пароль убран. Сохраните документ, чтобы изменение осталось.
 	The passwords don't match.	Пароли не совпадают.
-	Keep the password somewhere safe: without it nobody, WordCraft included, can open the document. Leave both boxes empty to remove the password.	Храните пароль в надёжном месте: без него никто, включая WordCraft, не сможет открыть документ. Оставьте оба поля пустыми, чтобы убрать пароль.
+	Keep the password somewhere safe: without it nobody, Woant Office included, can open the document. Leave both boxes empty to remove the password.	Храните пароль в надёжном месте: без него никто, включая Woant Office, не сможет открыть документ. Оставьте оба поля пустыми, чтобы убрать пароль.
 	{cols}×{rows} Table	Таблица {cols}×{rows}
 	Name	Имя
 	PRs	PR

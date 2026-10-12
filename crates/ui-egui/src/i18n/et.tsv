@@ -7,13 +7,13 @@
 # No Microsoft Word or other product localisation was consulted or copied.
 # Use short commands and plain Estonian. Keep product and format names.
 # Use count-neutral labels. This catalog does not add Estonian spell checking.
-# Author: @henno with Codex; MIT OR Apache-2.0, like WordCraft.
+# Author: @henno with Codex; MIT OR Apache-2.0, like Woant Office.
 
 	(no suggestions)	(soovitused puuduvad)
 	1.5 Line Spacing	Reavahe 1,5
-	A free, open-source word processor written from scratch in Rust.\nPart of the Crafting Apps from the ArtCraft team.	Tasuta avatud lähtekoodiga tekstitöötlusprogramm, mis on kirjutatud Rustis.\nArtCrafti meeskonna Crafting Appsi osa.
+	A free, open-source word processor written from scratch in Rust.\nA fork of WordCraft.	Tasuta avatud lähtekoodiga tekstitöötlusprogramm, mis on kirjutatud Rustis.\nWordCrafti haru.
 	About	Teave
-	About WordCraft	WordCrafti teave
+	About Woant Office	Woant Office'i teave
 	Accept	Nõustu
 	Accept All Changes	Nõustu kõigi muudatustega
 	Accept This Change	Nõustu selle muudatusega
@@ -139,7 +139,6 @@
 	Comment	Kommentaar
 	Comments	Kommentaarid
 	Comments Pane	Kommentaaripaan
-	Community\nDiscord	Discordi\nkogukond
 	Compact	Tihe
 	Compare	Võrdle
 	Compress Pictures	Tihenda pildid
@@ -191,8 +190,6 @@
 	Different First Page	Erinev esileht
 	Different Odd & Even Pages	Erinevad paaris- ja paaritud lehed
 	Direct formatting	Otsevormindus
-	Discord	Discord
-	Discord community	Discordi kogukond
 	Display	Kuva
 	Display for Review	Kuva läbivaatuseks
 	Distribute Columns	Jaota veerud ühtlaselt
@@ -237,7 +234,7 @@
 	Envelopes	Ümbrikud
 	Eraser	Kustutuskumm
 	Even Page	Paarisleht
-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Kõik käsud on saadaval skriptidele ja tehisintellekti agentidele. MCP-serveri jaoks käivita `wordcraft-cli mcp`. JSON-juhtkanali jaoks käivita rakendus valikuga `--control <port>`.
+	Every command is available to scripts and AI agents: run `woant-office-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Kõik käsud on saadaval skriptidele ja tehisintellekti agentidele. MCP-serveri jaoks käivita `woant-office-cli mcp`. JSON-juhtkanali jaoks käivita rakendus valikuga `--control <port>`.
 	Export	Ekspordi
 	Export PDF	Ekspordi PDF
 	Export Page as PNG	Ekspordi leht PNG-na
@@ -353,8 +350,6 @@
 	Inspect Styles at Selection	Kontrolli valiku stiile
 	Interface language:	Kasutajaliidese keel:
 	Italic	Kaldkiri
-	Join the ArtCraft community on Discord	Liitu ArtCrafti kogukonnaga Discordis
-	Join us on Discord: discord.gg/artcraft	Liitu meiega Discordis: discord.gg/artcraft
 	Justify	Rööpjoonda
 	Keep Lines Together	Hoia read koos
 	Keep Text Only	Säilita ainult tekst
@@ -655,7 +650,6 @@
 	Show Notes	Kuva märkused
 	Show all formatting marks	Kuva kõik vormindusmärgid
 	Show rulers	Kuva joonlauad
-	Show the community button in the title bar	Kuva tiitliribal kogukonna nupp
 	Show/Hide ¶	Kuva/peida ¶
 	Show\nComments	Kuva\nkommentaarid
 	Shrink Font 1 Point	Vähenda fonti 1 punkti võrra
@@ -670,7 +664,7 @@
 	Small caps	Kapiteelkiri
 	SmartArt	SmartArt
 	Sort	Sordi
-	Source code: github.com/storytold/wordcraft	Lähtekood: github.com/storytold/wordcraft
+	Source code: github.com/GermanTeran18/woant-office	Lähtekood: github.com/GermanTeran18/woant-office
 	Space before/after:	Vahe enne/pärast:
 	Spacing	Vahe
 	Spacing (pt):	Vahe (pt):
@@ -797,7 +791,7 @@
 	Word Right	Sõna paremale
 	Word document (*.docx)	Wordi dokument (*.docx)
 	WordArt	WordArt
-	WordCraft	WordCraft
+	Woant Office	Woant Office
 	Words	Sõnad
 	Words only	Ainult sõnad
 	Wrap Text	Mähi tekst
@@ -862,7 +856,7 @@
 	Stopped	Lõpetatud
 	Speed	Kiirus
 	Normal speed	Tavaline kiirus
-	AutoSave documents you have saved in WordCraft	Salvesta WordCraftis salvestatud dokumendid automaatselt
+	AutoSave documents you have saved in Woant Office	Salvesta Woant Office'is salvestatud dokumendid automaatselt
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Automaatsalvestus ebaõnnestus: {error}. Selle uuesti sisse lülitamiseks salvesta dokument.
 	Couldn't download {name}: {error}	Faili {name} allalaadimine ebaõnnestus: {error}
 	Do you want to save changes to {name}?	Kas soovid faili {name} muudatused salvestada?
@@ -1032,7 +1026,6 @@
 	Left Margin	Vasak veeris
 	Repeat as header row on each page	Korda päisereana igal lehel
 	Insert a new equation (Alt+=)	Lisa uus võrrand (Alt+=)
-	getartcraft.com/apps/wordcraft	getartcraft.com/apps/wordcraft
 	Bottom Margin	Alumine veeris
 	Cell	Lahter
 	Specify height:	Määra kõrgus:
@@ -1126,7 +1119,7 @@
 	The document will be saved with a password. Save it to protect it.	Dokument salvestatakse parooliga. Kaitsmiseks salvesta see.
 	The password is removed. Save the document to keep the change.	Parool on eemaldatud. Muudatuse säilitamiseks salvesta dokument.
 	The passwords don't match.	Paroolid ei ühti.
-	Keep the password somewhere safe: without it nobody, WordCraft included, can open the document. Leave both boxes empty to remove the password.	Hoia parooli kindlas kohas: ilma selleta ei saa keegi, ka WordCraft, dokumenti avada. Parooli eemaldamiseks jäta mõlemad väljad tühjaks.
+	Keep the password somewhere safe: without it nobody, Woant Office included, can open the document. Leave both boxes empty to remove the password.	Hoia parooli kindlas kohas: ilma selleta ei saa keegi, ka Woant Office, dokumenti avada. Parooli eemaldamiseks jäta mõlemad väljad tühjaks.
 	Align Top Left	Joonda üles vasakule
 	Align Top Center	Joonda üles keskele
 	Align Top Right	Joonda üles paremale

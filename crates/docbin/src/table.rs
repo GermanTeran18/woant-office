@@ -3,11 +3,11 @@
 
 use std::sync::Arc;
 
-use wordcraft_doc::Rgb;
-use wordcraft_doc::para::Paragraph;
-use wordcraft_doc::props::{Align, Border, BorderStyle, Borders, CellProps, HeightRule, RowProps, TableProps, VAlign, VMerge};
-use wordcraft_doc::table::{Cell, Row, Table};
-use wordcraft_doc::{Block, Blocks, para_block};
+use woant_office_doc::Rgb;
+use woant_office_doc::para::Paragraph;
+use woant_office_doc::props::{Align, Border, BorderStyle, Borders, CellProps, HeightRule, RowProps, TableProps, VAlign, VMerge};
+use woant_office_doc::table::{Cell, Row, Table};
+use woant_office_doc::{Block, Blocks, para_block};
 
 use crate::fmt;
 use crate::sprm::{self, Prl};

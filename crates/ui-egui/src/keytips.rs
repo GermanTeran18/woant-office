@@ -329,7 +329,7 @@ fn controls(tab: &str) -> Vec<Control> {
             c("Split", "view.split"),
             c("Macros", "tools.macros"),
         ],
-        "Help" => vec![d("Help", "about"), c("Community Discord", "ui.discord"), d("Commands", "commands")],
+        "Help" => vec![d("Help", "about"), d("Commands", "commands")],
         "Table Design" => {
             vec![m("Shading", "table.shading"), m("Borders", "table.borders"), c("Border Painter", "table.borderPainter")]
         }
@@ -675,7 +675,7 @@ mod tests {
     use super::*;
 
     fn app() -> WordApp {
-        WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), crate::Services::default())
+        WordApp::new(woant_office_engine::Session::new(woant_office_doc::Document::new()), crate::Services::default())
     }
 
     #[test]
@@ -699,7 +699,7 @@ mod tests {
         // when the Word feature catalog lists them (the ribbon shows them too); `ui.*` commands are
         // the app's own (`WordApp::run`).
         let a = app();
-        let catalog: Vec<&str> = wordcraft_engine::catalog::entries().into_iter().map(|e| e.3).collect();
+        let catalog: Vec<&str> = woant_office_engine::catalog::entries().into_iter().map(|e| e.3).collect();
         let mut missing = Vec::new();
         for (tab, _) in TAB_LETTERS {
             for ctrl in controls(tab) {
